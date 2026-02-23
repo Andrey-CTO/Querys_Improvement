@@ -1,0 +1,1420 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TÓTAL REPORT® - Hub de Conocimiento</title>
+    
+    <!-- Fuentes: Inter para un look profesional y moderno -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Carga de Tailwind CSS con el plugin de Tipografía (Prose) -->
+    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+    
+    <!-- Configuración de Tailwind para usar la fuente Inter -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        tr: { dark: '#0f172a', primary: '#2563eb', emerald: '#10b981' }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Carga de React, ReactDOM, Babel y Marked (Para Markdown) -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <!-- Carga de FontAwesome para los íconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: #f8fafc; margin: 0; overflow: hidden; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #0f172a; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        
+        /* Ajustes finos para el Markdown renderizado */
+        .prose a { color: #34d399; text-decoration: none; border-bottom: 1px dashed #34d399; transition: all 0.2s; }
+        .prose a:hover { color: #6ee7b7; border-bottom-color: #6ee7b7; }
+        .prose code { background-color: #1e293b; color: #38bdf8; padding: 0.2rem 0.4rem; border-radius: 0.25rem; font-size: 0.875em; }
+        .prose pre code { background-color: transparent; color: inherit; padding: 0; }
+        .prose pre { background-color: #0b1120; border: 1px solid #1e293b; }
+        .prose blockquote { border-left-color: #34d399; font-style: italic; color: #94a3b8; background: #1e293b50; padding: 0.5rem 1rem; border-radius: 0 0.5rem 0.5rem 0; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // Configurar Marked para asegurar que los saltos de línea se respeten y prevenir sanitización extrema que rompa formato
+        marked.setOptions({ breaks: true, gfm: true });
+
+        // --- MAPEO DE ICONOS ---
+        const Icon = ({name, className}) => <i className={`fa-solid fa-${name} ${className || ''}`}></i>;
+
+        // --- INITIAL DATA (MARKDOWN ENRIQUECIDO, EXPLICACIONES Y ENLACES REALES) ---
+        const DEFAULT_GUIDE_ID = 'guide_master_plan_5m_advanced';
+
+        const initialGuides = [
+          {
+            id: DEFAULT_GUIDE_ID,
+            title: 'Master Plan Intensivo: Ingeniería de Datos e Implementación',
+            description: 'Programa avanzado de 5 meses (20 semanas) en SQL Server + Python. Enfoque profundo en performance volumétrico, validación estricta, imputación predictiva y arquitecturas de extracción eficientes.',
+            modules: [
+              {
+                id: 'mod1',
+                title: 'Mes 1: Diagnóstico y Optimización SQL Estructural',
+                practices: [
+                  { 
+                    id: 'p1_1', 
+                    title: 'Semanas 1-2: Anatomía del Query Optimizer y Diagnóstico Avanzado', 
+                    details: `### 🎯 Objetivo Principal
+Evolucionar de una optimización basada en "prueba y error" hacia un diagnóstico científico. Aprenderás a entender cómo el motor de bases de datos compila, algebriza y calcula el costo de una consulta antes de ejecutarla.
+
+### 🧠 Explicación de Conceptos Clave
+
+1. **Planes de Ejecución (Execution Plans)**:
+   El motor SQL no ejecuta el código tal como lo escribes. Usa un optimizador basado en costos para elegir el camino más barato. Un \`Index Scan\` lee toda la tabla (lento para datos masivos), mientras que un \`Index Seek\` va directamente a la fila que necesitas a través de un árbol B-Tree (ultra rápido). 
+   
+2. **Estadísticas y Cardinalidad (El Cerebro del Optimizador)**:
+   Las "Estadísticas" son histogramas matemáticos que SQL Server guarda sobre tus datos. Si el motor estima que tu consulta devolverá 1 fila, reservará 1 MB de RAM y usará un algoritmo \`Nested Loop\`. Pero si las estadísticas están desactualizadas y realmente devuelves 1,000,000 de filas, la consulta colapsará intentando hacer ese "loop" un millón de veces, causando un desbordamiento a disco (*Spill to TempDB*).
+   
+3. **Tipos de JOINs Físicos**:
+   - **Nested Loop**: Ideal para conjuntos pequeños. Busca fila por fila en la otra tabla.
+   - **Hash Match**: Ideal para tablas grandes sin índices útiles. El motor construye una tabla hash en RAM (muy costoso en memoria).
+   - **Merge Join**: El más eficiente para tablas gigantes, *siempre y cuando* ambas tablas ya estén ordenadas por el mismo índice.
+   
+### 🛠️ Taller Práctico Esperado (Ejercicios)
+1. Ejecuta la siguiente consulta de diagnóstico en tu entorno QA/Productivo para ver qué está consumiendo el servidor ahora mismo:
+   \`\`\`sql
+   SELECT TOP 10 total_worker_time/execution_count AS AvgCPU, 
+          execution_count, query_plan, text 
+   FROM sys.dm_exec_query_stats 
+   CROSS APPLY sys.dm_exec_sql_text(sql_handle) 
+   CROSS APPLY sys.dm_exec_query_plan(plan_handle) 
+   ORDER BY AvgCPU DESC;
+   \`\`\`
+2. Extrae el plan de ejecución de la consulta más lenta encontrada.
+3. Activa \`SET STATISTICS IO, TIME ON;\`. Ejecuta la consulta lenta y anota los **Logical Reads**.
+4. En el plan de ejecución, busca el operador con mayor costo (%) e identifica si existe una discrepancia mayor a 10x entre el **Estimated Number of Rows** y el **Actual Number of Rows**. Si es así, debes actualizar las estadísticas de esa tabla y volver a medir.
+
+### 📚 Recursos Adicionales y Referencias
+- 🔗 [Guía Oficial: Entender los planes de ejecución (Microsoft)](https://learn.microsoft.com/es-es/sql/relational-databases/performance/execution-plans)
+- 🔗 [Guía Oficial: DBCC SHOW_STATISTICS (Microsoft)](https://learn.microsoft.com/es-es/sql/t-sql/database-console-commands/dbcc-show-statistics-transact-sql)
+- 🔗 [Artículo: Cómo leer un Plan de Ejecución (Brent Ozar)](https://www.brentozar.com/sql/execution-plans/)
+- 🔗 [Tutorial: Profundizando en las Estadísticas de SQL Server (SQLShack)](https://www.sqlshack.com/sql-server-statistics-and-how-to-perform-update-statistics-in-sql/)
+- 🔗 [Profundización: Joins lógicos y físicos (Microsoft)](https://learn.microsoft.com/es-es/sql/relational-databases/performance/joins)` 
+                  },
+                  { 
+                    id: 'p1_2', 
+                    title: 'Semanas 3-4: Refactorización Set-Based y Fin de Cursores', 
+                    details: `### 🎯 Objetivo Principal
+Cambiar el paradigma de programación "Fila a Fila" (Procedimental, también conocido como *RBAR: Row-By-Agonizing-Row*) por el procesamiento en "Bloques de Datos" (Relacional/Set-Based), destrabando el verdadero rendimiento del motor SQL.
+
+### 🧠 Explicación de Conceptos Clave
+
+1. **La Muerte de los Cursores**:
+   Los bloques \`DECLARE CURSOR ... FETCH NEXT\` o bucles \`WHILE\` obligan al motor SQL (que está diseñado para manejar conjuntos) a comportarse como código C# o Python. Esto causa cambios de contexto masivos, satura el log de transacciones y bloquea páginas de memoria. Deben ser erradicados.
+   
+2. **Funciones de Ventana (Window Functions)**:
+   Son la solución mágica para reemplazar bucles. Permiten hacer cálculos sobre un conjunto de filas que están relacionadas con la fila actual, *sin agruparlas* ni reducir el conjunto de resultados.
+   - \`ROW_NUMBER()\`: Perfecto para eliminar duplicados masivos rápidamente.
+   - \`SUM() OVER(PARTITION BY...)\`: Perfecto para crear saldos acumulativos (*Running Totals*).
+   - \`LEAD() y LAG()\`: Te permiten "mirar" la fila anterior o siguiente sin tener que hacer un costoso \`JOIN\` de la tabla contra sí misma.
+   
+### 🛠️ Taller Práctico Esperado (Ejercicios)
+1. Identifica en la base de datos un *Stored Procedure* legacy (antiguo) que contenga un bloque \`CURSOR\` o un bucle \`WHILE\` insertando datos uno por uno.
+2. Mide su tiempo de ejecución actual (Ej. 5 minutos para procesar 100k registros).
+3. Reescribe el código. Elimina el cursor y reemplázalo por una **Common Table Expression (CTE)** utilizando la función \`ROW_NUMBER()\` para lograr la misma lógica de ordenamiento y actualización masiva con un único comando \`UPDATE\`.
+4. Documenta la reducción de tiempo de ejecución (típicamente bajará de minutos a apenas unos segundos) y preséntalo al equipo.
+
+### 📚 Recursos Adicionales y Referencias
+- 🔗 [Artículo: Por qué RBAR (Fila a Fila) es el enemigo (Brent Ozar)](https://www.brentozar.com/archive/2014/10/rbar-row-agonizing-row/)
+- 🔗 [Guía Oficial: Funciones de ventana (Microsoft)](https://learn.microsoft.com/es-es/sql/t-sql/functions/window-functions-transact-sql)
+- 🔗 [Tutorial: La guía definitiva de Window Functions (SQL Server Central)](https://www.sqlservercentral.com/articles/the-ultimate-guide-to-window-functions-in-sql-server)
+- 🔗 [Documentación: CTEs (Common Table Expressions) en SQL Server](https://learn.microsoft.com/es-es/sql/t-sql/queries/with-common-table-expression-transact-sql)` 
+                  }
+                ]
+              },
+              {
+                id: 'mod2',
+                title: 'Mes 2: Arquitectura SQL Volumétrica y Concurrencia',
+                practices: [
+                  { 
+                    id: 'p2_1', 
+                    title: 'Semanas 5-6: Indexación Analítica y Columnstore (>10M registros)', 
+                    details: `### 🎯 Objetivo Principal
+Diseñar estructuras de almacenamiento especializadas que soporten reportería pesada, analítica de datos y agregaciones sobre millones de registros sin colapsar la latencia de los discos (I/O).
+
+### 🧠 Explicación de Conceptos Clave
+
+1. **Índices Columnstore (CCI / NCCI)**:
+   La tecnología tradicional de SQL almacena los datos "por filas" (Rowstore). Si quieres sumar los salarios de 10 millones de empleados, SQL debe leer al disco todas las columnas de la tabla. 
+   Un **Columnstore Index** almacena la tabla "por columnas". Esto genera una compresión bestial (hasta 100x porque datos similares se comprimen mejor juntos) y permite el *Batch Mode Execution* (procesar bloques de 900 filas en la CPU a la vez). Es **obligatorio** para tablas transaccionales gigantes que alimentan Power BI o reportes regulatorios.
+   
+2. **Covering Indexes e Índices Filtrados**:
+   Si tu consulta siempre trae la columna \`Nombre\` buscando por \`ID\`, agrega \`Nombre\` a la cláusula \`INCLUDE\` del índice. Esto evita el terrible *Key Lookup* (cuando el motor encuentra el ID en el índice, pero tiene que viajar a la tabla física a buscar el nombre fila por fila).
+   
+### 🛠️ Taller Práctico Esperado (Ejercicios)
+1. Construye un escenario de pruebas masivo:
+   \`\`\`sql
+   CREATE TABLE VentasHistoricas (ID int IDENTITY, Fecha Date, Categoria varchar(50), Monto Decimal(18,2));
+   -- Llena la tabla con 5 Millones de registros ficticios usando CROSS JOINs.
+   \`\`\`
+2. Lanza una consulta analítica de agrupación pesada: 
+   \`SELECT Categoria, SUM(Monto) FROM VentasHistoricas GROUP BY Categoria;\`
+   Mide el tiempo de ejecución y lecturas lógicas con \`STATISTICS IO ON\`.
+3. Elimina el Clustered Index tradicional y aplica un Columnstore Index:
+   \`\`\`sql
+   CREATE CLUSTERED COLUMNSTORE INDEX CCI_Ventas ON VentasHistoricas;
+   \`\`\`
+4. Vuelve a ejecutar la consulta del paso 2. Observa cómo el tiempo de respuesta baja a menos de 1 segundo y el I/O se vuelve casi nulo.
+
+### 📚 Recursos Adicionales y Referencias
+- 🔗 [Guía Oficial: Descripción general de Columnstore (Microsoft)](https://learn.microsoft.com/es-es/sql/relational-databases/indexes/columnstore-indexes-overview)
+- 🔗 [Guía Oficial: Crear índices con columnas incluidas (Microsoft)](https://learn.microsoft.com/es-es/sql/relational-databases/indexes/create-indexes-with-included-columns)
+- 🔗 [Blog Especializado: Columnstore Indexes (Niko Neugebauer)](http://www.nikoport.com/columnstore/)
+- 🔗 [Artículo: Fill Factor en SQL Server - ¿Qué es y cómo configurarlo? (SQLShack)](https://www.sqlshack.com/sql-server-fill-factor-overview/)` 
+                  },
+                  { 
+                    id: 'p2_2', 
+                    title: 'Semanas 7-8: Bulk Processing y Resolución de Deadlocks', 
+                    details: `### 🎯 Objetivo Principal
+Lograr cargas masivas de datos en ventanas de tiempo mínimas sin afectar la disponibilidad del sistema transaccional, y desarrollar habilidades críticas de resolución de conflictos en bases de datos multi-usuario.
+
+### 🧠 Explicación de Conceptos Clave
+
+1. **Aislamiento y Concurrencia (El peligro del NOLOCK)**:
+   Muchos desarrolladores usan \`WITH (NOLOCK)\` en todas partes para evitar que sus \`SELECT\` se bloqueen. Esto es un error gravísimo en entornos regulatorios, ya que permite leer datos "fantasma" (transacciones a medio hacer que luego se cancelan) y causa reportes financieros erróneos. 
+   La solución moderna se llama **RCSI (Read Committed Snapshot Isolation)**, la cual usa *TempDB* para guardar la última versión "buena" de los datos y mostrarla a los lectores sin bloquear a los escritores.
+   
+2. **Análisis de Bloqueos Mortales (Deadlocks)**:
+   Un deadlock ocurre cuando el Proceso A bloquea la Tabla 1 y necesita la Tabla 2, mientras el Proceso B bloqueó la Tabla 2 y necesita la Tabla 1. **Un deadlock no se soluciona "optimizando la consulta" o poniendo más RAM**, se soluciona ordenando el código para que siempre acceda a los recursos en la misma secuencia, o creando índices que eviten escaneos innecesarios que choquen entre sí.
+   
+### 🛠️ Taller Práctico Esperado (Ejercicios)
+1. **Provocar un Deadlock**:
+   - Abre la pestaña de *Extended Events* en SSMS y localiza la sesión \`system_health\`.
+   - Abre la ventana de Query 1 y ejecuta: \`BEGIN TRAN; UPDATE TablaA SET Valor=1; WAITFOR DELAY '00:00:05'; UPDATE TablaB SET Valor=1;\`
+   - Rápidamente abre la ventana de Query 2 y ejecuta la inversa: \`BEGIN TRAN; UPDATE TablaB SET Valor=2; WAITFOR DELAY '00:00:05'; UPDATE TablaA SET Valor=2;\`
+2. El servidor matará ("Victimizará") a una de las consultas en unos segundos.
+3. Descarga y extrae el XML (Deadlock Graph) del evento. Lee la gráfica e identifica el "Orden de Adquisición".
+4. Modifica tu código para evitarlo estructuralmente.
+
+### 📚 Recursos Adicionales y Referencias
+- 🔗 [Guía Oficial: Niveles de Aislamiento de Transacciones (Microsoft)](https://learn.microsoft.com/es-es/sql/t-sql/statements/set-transaction-isolation-level-transact-sql)
+- 🔗 [Guía Oficial: Guía de resolución de interbloqueos (Deadlocks)](https://learn.microsoft.com/es-es/sql/relational-databases/sql-server-deadlocks-guide)
+- 🔗 [Documentación: Guía de rendimiento de carga masiva de datos](https://learn.microsoft.com/es-es/sql/relational-databases/import-export/prerequisites-for-minimal-logging-in-bulk-import)
+- 🔗 [Video/Artículo: Cómo rastrear Deadlocks usando Extended Events (Brent Ozar)](https://www.brentozar.com/archive/2014/03/extended-events-doesnt-hard/)` 
+                  }
+                ]
+              },
+              {
+                id: 'mod3',
+                title: 'Mes 3: Python Avanzado - Calidad y Contratos de Datos',
+                practices: [
+                  { 
+                    id: 'p3_1', 
+                    title: 'Semanas 9-10: Profiling Vectorizado y Detección de Anomalías', 
+                    details: `### 🎯 Objetivo Principal
+Aplicar ciencias de datos tempranas a los flujos de extracción (ETL). Conocer la "salud matemática" de un dataset (su distribución, sesgos y datos atípicos) antes de aplicar cualquier regla de negocio o intentar guardarlo en la base de datos.
+
+### 🧠 Explicación de Conceptos Clave
+
+1. **Vectorización Extrema en Pandas**:
+   Si estás usando \`for index, row in df.iterrows():\` estás matando el rendimiento de Python. Pandas está construido sobre C (Cython). Debes usar \`np.where()\` o operaciones columnares enteras para procesar millones de filas en milisegundos en lugar de minutos.
+   
+2. **Detección Matemática de Anomalías (Outliers)**:
+   ¿Cómo sabes si un pago de $1,000,000 es normal o un error tipográfico? Usando estadística descriptiva. El método del **Rango Intercuartílico (IQR = Q3 - Q1)** te permite crear barreras invisibles. Todo valor que supere el límite superior de la campana de datos será clasificado como anómalo de forma automática.
+
+3. **YData Profiling (Antes Pandas Profiling)**:
+   Herramienta de magia negra. Con dos líneas de código genera un reporte HTML gigante con análisis de valores faltantes, correlación de Pearson y distribución de frecuencia de todo tu DataFrame.
+   
+### 🛠️ Taller Práctico Esperado (Ejercicios)
+1. Consigue un archivo CSV público grande (ej. Transacciones de tarjetas de crédito o censos).
+2. Prohíbete usar bucles \`for\`. Escribe una función puramente vectorizada usando \`numpy\` que calcule el Q1 y Q3 de la columna principal.
+3. Crea una nueva columna booleana \`'es_anomalo'\` usando:
+   \`\`\`python
+   import numpy as np
+   df['es_anomalo'] = np.where((df['columna'] < limite_inferior) | (df['columna'] > limite_superior), True, False)
+   \`\`\`
+4. Instala \`ydata-profiling\` y genera el documento HTML exploratorio para auditar visualmente los datos que han sido marcados como anómalos.
+
+### 📚 Recursos Adicionales y Referencias
+- 🔗 [Doc Oficial: Operaciones Vectorizadas en Pandas](https://pandas.pydata.org/docs/user_guide/basics.html)
+- 🔗 [Repositorio: YData Profiling Github](https://github.com/ydataai/ydata-profiling)
+- 🔗 [Tutorial: Detección de Outliers usando IQR y Z-Score (Towards Data Science)](https://towardsdatascience.com/5-ways-to-detect-outliers-that-every-data-scientist-should-know-python-code-70a54335a623)
+- 🔗 [Artículo: Por qué no debes usar iterrows() en Pandas (Real Python)](https://realpython.com/fast-flexible-pandas/)` 
+                  },
+                  { 
+                    id: 'p3_2', 
+                    title: 'Semanas 11-12: Contratos Estrictos (Pandera y Regex)', 
+                    details: `### 🎯 Objetivo Principal
+Implementar el paradigma de programación defensiva ("Fail-Fast"). Garantizar que los datos que entran a nuestro sistema actúen bajo un contrato estricto: si no cumplen las reglas de negocio y formato, el proceso lanza una excepción controlada antes de que la "basura" llegue a SQL Server.
+
+### 🧠 Explicación de Conceptos Clave
+
+1. **Contratos de Datos (Data Contracts con Pandera)**:
+   Una tabla SQL define tipos de datos básicos (varchar, int), pero no entiende lógica de negocio compleja (ej. "La edad debe ser mayor a 18 y el correo debe tener arroba"). La librería *Pandera* te permite definir un esquema que el DataFrame debe pasar estrictamente.
+   
+2. **Validación de Integridad en Memoria (Anti-Joins)**:
+   Si intentas insertar un registro con un \`ClienteID = 99\` y ese cliente no existe en la base de datos, SQL Server arrojará un doloroso *Foreign Key Violation* deteniendo todo el proceso de carga masiva. Aprende a hacer un cruce en Python usando Pandas Merge (con el argumento \`indicator=True\`) para aislar los IDs "Huerfanos" en la memoria RAM y enviarlos a cuarentena antes de interactuar con la BD.
+
+### 🛠️ Taller Práctico Esperado (Ejercicios)
+1. Usa **Pandera** para definir un contrato obligatorio (Schema) para una tabla de tu empresa. 
+   - Reglas: Col_A no puede ser nula. Col_B (Email) debe cumplir expresión regular. Col_C (Monto) debe estar entre 0 y 5 millones.
+   \`\`\`python
+   import pandera as pa
+   schema = pa.DataFrameSchema({
+       "Monto": pa.Column(float, pa.Check.in_range(0, 5000000)),
+       "Email": pa.Column(str, pa.Check.str_matches(r"^[^@]+@[^@]+\.[^@]+$"))
+   })
+   \`\`\`
+2. Inyecta intencionalmente un DataFrame con datos "sucios".
+3. Usa un bloque \`Try / Except pa.errors.SchemaError\` para capturar el fallo, permitir que la carga de datos buenos continúe y exportar exclusivamente las filas "dañadas" a un archivo plano de "Reporte de Cuarentena" para revisión manual.
+
+### 📚 Recursos Adicionales y Referencias
+- 🔗 [Documentación: Pandera Data Validation](https://pandera.readthedocs.io/en/stable/)
+- 🔗 [Herramienta Interactiva: Probador de Expresiones Regulares (Regex101)](https://regex101.com/)
+- 🔗 [Tutorial: Uso de Pandas Merge como Anti-Join](https://towardsdatascience.com/how-to-do-an-anti-join-in-pandas-7b2ce8f4604e)
+- 🔗 [Artículo: Expresiones Regulares en Python (Real Python)](https://realpython.com/regex-python/)` 
+                  }
+                ]
+              },
+              {
+                id: 'mod4',
+                title: 'Mes 4: Imputación Avanzada e Integración Híbrida',
+                practices: [
+                  { 
+                    id: 'p4_1', 
+                    title: 'Semanas 13-14: Imputación Predictiva e Ingeniería de Características', 
+                    details: `### 🎯 Objetivo Principal
+Elevar la precisión estadística. Dejar de arruinar distribuciones rellenando datos en blanco con "ceros", "N/A" o promedios simples. Utilizar métodos inferenciales y modelos de machine learning clásicos que recuperen el dato perdido basándose en el comportamiento de registros hermanos.
+
+### 🧠 Explicación de Conceptos Clave
+
+1. **El Problema de Rellenar con Cero (fillna(0))**:
+   En reportes financieros, si faltan los ingresos de 1,000 personas y les pones $0, destruirás la media nacional y los cálculos de varianza, generando reportes falsos que podrían ocasionar multas por entes regulatorios.
+
+2. **K-Nearest Neighbors (KNNImputer)**:
+   Un algoritmo de imputación multivariada. Si a un individuo le falta el dato "Salario", pero sabemos que tiene 45 años, vive en estrato alto y es Ingeniero. KNNImputer busca en toda la base de datos a los "5 vecinos más cercanos" (matemáticamente por distancia Euclidiana) que tengan características idénticas, promedia sus salarios reales y se lo asigna al individuo con el dato faltante.
+   
+3. **MICE (IterativeImputer)**:
+   Imputación mediante ecuaciones encadenadas. Es el estándar de oro en ciencias de la salud y finanzas complejas. Usa un modelo de regresión cíclico para ir adivinando cada valor faltante basado en todos los demás.
+   
+### 🛠️ Taller Práctico Esperado (Ejercicios)
+1. Toma un dataset propio (ej. 100,000 filas). Usa Numpy para reemplazar aleatoriamente (\`np.nan\`) el 20% de una columna numérica vital. 
+2. Realiza 3 copias del DataFrame dañado. 
+   - A la copia 1 aplícale un \`fillna(df.mean())\`.
+   - A la copia 2 aplícale un modelo \`KNNImputer(n_neighbors=5)\`.
+3. Compara las desviaciones estándar de las dos copias contra la desviación de la tabla original perfecta. 
+4. Escribe un análisis documentando por qué el modelo KNN mantuvo intacta la distribución y la varianza, a diferencia de la media simple que causó un "pico" artificial en el centro.
+
+### 📚 Recursos Adicionales y Referencias
+- 🔗 [Doc Oficial: Scikit-Learn KNNImputer](https://scikit-learn.org/stable/modules/generated/sklearn.impute.KNNImputer.html)
+- 🔗 [Doc Oficial: Iterative Imputer (MICE)](https://scikit-learn.org/stable/modules/impute.html#iterative-imputer)
+- 🔗 [Tutorial: Imputación de datos faltantes con ML (Machine Learning Mastery)](https://machinelearningmastery.com/knn-imputation-for-missing-machine-learning-data/)
+- 🔗 [Artículo: Feature Engineering - Binning y Discretización (TDS)](https://towardsdatascience.com/data-preprocessing-with-python-pandas-part-5-binning-c5bd5fd1b950)` 
+                  },
+                  { 
+                    id: 'p4_2', 
+                    title: 'Semanas 15-16: Chunking y Pushdown Computation (Integración)', 
+                    details: `### 🎯 Objetivo Principal
+Diseñar y orquestar una arquitectura de transferencia masiva eficiente. Conectar las habilidades de SQL y Python sin saturar el ancho de banda de la red ni causar que los servidores se queden sin memoria RAM (\`MemoryError\`).
+
+### 🧠 Explicación de Conceptos Clave
+
+1. **Delegación de Carga (Pushdown Computation)**:
+   El principal error de los ingenieros de datos es extraer todo a Python y hacer allí el \`GROUP BY\`. **Regla de oro:** El motor SQL siempre será infinitamente más rápido para sumar, agrupar y filtrar (WHERE) porque tiene los datos cacheados y físicamente cerca de los discos, además de usar índices. El procesamiento se "empuja hacia abajo" a SQL. A Python **solo** debe llegar la data pre-agregada o que estrictamente requiera Machine Learning/Regex.
+
+2. **Procesamiento por Lotes (Chunking)**:
+   Si tu consulta sí o sí debe devolver 10 millones de registros (ej. 5GB de datos) para limpiarlos en Python, si intentas guardarlos en un solo DataFrame, el servidor de Python se colgará por falta de RAM. El comando \`pd.read_sql()\` tiene un parámetro mágico llamado \`chunksize\`. Este transforma el DataFrame en un generador, trayendo bloques de 100,000 registros a la vez, limpiándolos y liberando memoria.
+
+3. **Inserción Ultra-Rápida (\`fast_executemany\`)**:
+   Insertar 100k filas en Python estándar tarda minutos. Configurar el motor de SQLAlchemy con \`fast_executemany=True\` activa drivers nativos del sistema operativo, comprimiendo la carga e insertando los datos en segundos.
+   
+### 🛠️ Taller Práctico Esperado (Ejercicios)
+1. Conecta Python a tu BD usando SQLAlchemy + pyodbc.
+2. Escribe un bucle de extracción estructurado:
+   \`\`\`python
+   for chunk in pd.read_sql_query("SELECT * FROM TablaMasiva", engine, chunksize=50000):
+       chunk_limpio = aplicar_limpieza(chunk)
+       chunk_limpio.to_sql('TablaDestino', engine, if_exists='append', index=False)
+   \`\`\`
+3. Asegúrate de tener activada la bandera en el engine de sqlalchemy: \`create_engine('...', fast_executemany=True)\`. Mide la diferencia dramática de tiempo en la terminal.
+
+### 📚 Recursos Adicionales y Referencias
+- 🔗 [Doc Oficial: SQLAlchemy y MSSQL Fast Executemany](https://docs.sqlalchemy.org/en/20/dialects/mssql.html#fast-executemany-mode)
+- 🔗 [Documentación: Pandas Chunksize](https://pandas.pydata.org/docs/reference/api/pandas.read_sql_query.html)
+- 🔗 [Artículo: Pushdown Querying en bases de datos](https://en.wikipedia.org/wiki/Predicate_pushdown)
+- 🔗 [Guía: SQLAlchemy Bulk Operations](https://docs.sqlalchemy.org/en/20/tutorial/orm_data_manipulation.html#orm-bulk-insert-statements)` 
+                  }
+                ]
+              },
+              {
+                id: 'mod5',
+                title: 'Mes 5: Gobierno, Trazabilidad y Proyecto Final',
+                practices: [
+                  { 
+                    id: 'p5_1', 
+                    title: 'Semanas 17-18: Logging, Linaje de Datos y Versionamiento (Git)', 
+                    details: `### 🎯 Objetivo Principal
+Elevar la madurez técnica al nivel Enterprise. Entender que un código que funciona perfectamente pero que no se puede auditar ante reguladores, ni mantener en equipo, no es código profesional.
+
+### 🧠 Explicación de Conceptos Clave
+
+1. **Logging en Python (Módulo Nativo)**:
+   Se prohíbe terminantemente usar \`print()\` en scripts de producción. El código se ejecuta en servidores donde nadie está mirando una pantalla. Se debe implementar la librería nativa \`logging\`. Un logger profesional usa "Rotación" (Ej. Crear un archivo de log nuevo cada 10 MB para no llenar el disco duro) y categoriza los errores (INFO, WARNING, ERROR, CRITICAL).
+   
+2. **Linaje del Dato (Data Lineage)**:
+   Toda tabla que pase por un proceso en Python debe llevar metadatos "quemados" en sus columnas. Si un valor fue alterado por un algoritmo de imputación KNN, debe existir una columna booleana \`_Was_Imputed = 1\`. Si el regulador de gobierno pregunta "¿Por qué este valor es X?", debes poder trazar exactamente en qué fecha y archivo origen se calculó (\`_Execution_Timestamp\`, \`_Source_BatchId\`).
+
+3. **Versionamiento de Código (Git & Repositorios)**:
+   A partir de aquí tus scripts \`.py\` y consultas \`.sql\` son "Infraestructura como Código". Deben vivir en un repositorio central, con uso estricto del archivo \`.gitignore\` para que nunca expongas en internet archivos como \`.env\` que contienen las contraseñas de las bases de datos de producción.
+
+### 🛠️ Taller Práctico Esperado (Ejercicios)
+1. Crea un módulo global llamado \`logger_config.py\`. Configúralo con \`RotatingFileHandler\` para que guarde los eventos en \`C:/logs/etl_process.log\`.
+2. Actualiza tu script de la semana pasada, importando este log, y envuelve la conexión a Base de Datos en un bloque Try/Except que capture cualquier caída de red y la envíe al log como \`logger.critical("Error de Red SQL", exc_info=True)\`.
+3. Inicia un repositorio con \`git init\`. Crea tu \`.gitignore\` ignorando la carpeta de logs. Sube tus avances en commits estructurados y descriptivos.
+
+### 📚 Recursos Adicionales y Referencias
+- 🔗 [Tutorial Oficial: Python Logging HOWTO](https://docs.python.org/3/howto/logging.html)
+- 🔗 [Tutorial: Logging en Python - Nivel Avanzado (Real Python)](https://realpython.com/python-logging/)
+- 🔗 [Guía de Mejores Prácticas: Git Branching Strategies (Atlassian)](https://www.atlassian.com/git/tutorials/comparing-workflows/feature-branch-workflow)
+- 🔗 [Artículo: Data Lineage, ¿Qué es y por qué importa? (IBM)](https://www.ibm.com/topics/data-lineage)` 
+                  },
+                  { 
+                    id: 'p5_2', 
+                    title: 'Semanas 19-20: Tesis de Integración y Peer Review Final', 
+                    details: `### 🎯 Objetivo Principal
+Culminar el entrenamiento demostrando maestría End-to-End. Deberás someter tu solución integral al escrutinio profesional de otro ingeniero Senior (Peer Review) y defender el valor de negocio de tus refactorizaciones técnicas.
+
+### 🧠 Explicación de Conceptos Clave
+
+1. **Peer Review (Revisión Estricta de Código)**:
+   La herramienta más importante para evitar bugs en producción. Aprender a revisar código implica un checklist: ¿Está el código protegido contra Inyecciones SQL? ¿El plan de ejecución usa Parallelism adecuadamente? ¿Python está manejando excepciones limpiamente o se tragó un error con un "pass"?
+   
+2. **La Integración Total (Consolidación)**:
+   Tomarás un cuello de botella real y doloroso del sistema productivo actual. Diseñarás un "Pipeline" en 3 capas.
+   - Capa 1: Extracción optimizada usando vistas o SPs con enfoques Set-Based.
+   - Capa 2: Tránsito en Python donde aplicas Pandera (Contratos) y Chunking.
+   - Capa 3: Inserción Bulk y bitácoras de Logging.
+
+### 🛠️ Taller Práctico Final (Tesis de Certificación)
+1. **Selección del Problema**: Habla con el Arquitecto/Líder Técnico y elige el flujo más lento de la empresa que contenga alta volumetría de datos.
+2. **Aplicar la Optimización Integral**: Rebasa el problema aplicando índices *Columnstore* si es lectura, elimina cursores, asegura los niveles de aislamiento y limpia datos anómalos usando KNN en la capa analítica de Python.
+3. **Elaboración Ejecutiva (Pitch Técnico)**: Los ingenieros exitosos saben vender su código a los gerentes. Redacta un documento de 1 página que demuestre el ROI (Retorno de Inversión) con datos duros:
+   - *"El proceso X redujo su tiempo de procesamiento en ventana batch en un 95% (de 2 horas a 3 minutos)."*
+   - *"El módulo de validación bloqueó 12 inconsistencias que habrían causado una penalización regulatoria."*
+4. **Presentación Oficial**: Presenta tu solución en la junta de arquitectura para obtener la banda de **Implementador Avanzado TÓTAL REPORT**.
+
+### 📚 Recursos Adicionales y Referencias
+- 🔗 [Buenas Prácticas: Google Code Review Developer Guide](https://google.github.io/eng-practices/review/developer/)
+- 🔗 [Artículo: Cómo hacer buenas revisiones de código (Martin Fowler)](https://martinfowler.com/articles/effective-code-reviews.html)
+- 🔗 [Guía Ejecutiva: Cómo presentar resultados técnicos a la gerencia](https://hbr.org/2013/05/how-to-present-to-executives)` 
+                  }
+                ]
+              }
+            ]
+          }
+        ];
+
+        const initialUsers = [
+          { id: 'admin_1', name: 'Arquitecto de Datos (Admin)', role: 'admin', password: 'Homer08211' },
+          { id: 'usr_1', name: 'Luis Bastidas', role: 'user', password: 'Luis2026' },
+          { id: 'usr_2', name: 'Alejandro Villegas', role: 'user', password: 'Alejo2026' }
+        ];
+
+        // --- CUSTOM HOOKS ---
+        function useLocalStorage(key, initialValue) {
+          const [storedValue, setStoredValue] = useState(() => {
+            try {
+              const item = window.localStorage.getItem(key);
+              return item ? JSON.parse(item) : initialValue;
+            } catch (error) {
+              console.error(error);
+              return initialValue;
+            }
+          });
+
+          const setValue = (value) => {
+            try {
+              const valueToStore = value instanceof Function ? value(storedValue) : value;
+              setStoredValue(valueToStore);
+              window.localStorage.setItem(key, JSON.stringify(valueToStore));
+            } catch (error) {
+              console.error(error);
+            }
+          };
+
+          return [storedValue, setValue];
+        }
+
+        const generateId = () => Math.random().toString(36).substr(2, 9);
+
+        // --- MAIN APP COMPONENT ---
+        function App() {
+          // Version incrementada a _v8 para forzar carga de las nuevas referencias y colapsos
+          const [users, setUsers] = useLocalStorage('tr_guide_users_v8', initialUsers);
+          const [guides, setGuides] = useLocalStorage('tr_guides_v8', initialGuides);
+          const [progress, setProgress] = useLocalStorage('tr_guide_progress_v8', {});
+          const [currentUser, setCurrentUser] = useLocalStorage('tr_guide_current_user_v8', null);
+
+          const login = (user) => setCurrentUser(user);
+          const logout = () => setCurrentUser(null);
+
+          if (!currentUser) {
+            return <LoginScreen users={users} onLogin={login} setUsers={setUsers} />;
+          }
+
+          return (
+            <div className="flex h-screen bg-slate-900 text-slate-100 font-sans overflow-hidden">
+              <Sidebar currentUser={currentUser} onLogout={logout} />
+              <div className="flex-1 flex flex-col h-full overflow-hidden relative">
+                <TopBar currentUser={currentUser} onLogout={logout} />
+                <div className="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar bg-[#0f172a]">
+                  {currentUser.role === 'admin' ? (
+                    <AdminDashboard 
+                      users={users} setUsers={setUsers}
+                      guides={guides} setGuides={setGuides}
+                      progress={progress} setProgress={setProgress}
+                    />
+                  ) : (
+                    <ImplementerDashboard 
+                      currentUser={currentUser} 
+                      guides={guides} 
+                      progress={progress} 
+                      setProgress={setProgress} 
+                    />
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        }
+
+        // --- COMPONENTS ---
+
+        function LoginScreen({ users, onLogin, setUsers }) {
+          const [newUserName, setNewUserName] = useState('');
+          const [newUserPassword, setNewUserPassword] = useState('');
+          
+          const [selectedUser, setSelectedUser] = useState(null);
+          const [passwordInput, setPasswordInput] = useState('');
+          const [loginError, setLoginError] = useState('');
+
+          const handleCreateUser = (e) => {
+            e.preventDefault();
+            if (!newUserName.trim() || !newUserPassword.trim()) return;
+            const newUser = { 
+              id: `usr_${Date.now()}`, 
+              name: newUserName.trim(), 
+              role: 'user',
+              password: newUserPassword.trim()
+            };
+            setUsers([...users, newUser]);
+            setNewUserName('');
+            setNewUserPassword('');
+            onLogin(newUser);
+          };
+
+          const handleSelectUser = (user) => {
+            setSelectedUser(user);
+            setPasswordInput('');
+            setLoginError('');
+          };
+
+          const handleLoginSubmit = (e) => {
+            e.preventDefault();
+            if (selectedUser && selectedUser.password === passwordInput) {
+              onLogin(selectedUser);
+            } else {
+              setLoginError('Contraseña incorrecta. Inténtalo de nuevo.');
+            }
+          };
+
+          return (
+            <div className="w-full h-screen flex flex-col items-center justify-center bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-slate-800 via-[#0f172a] to-black p-4">
+              <div className="w-full max-w-md bg-slate-800/50 backdrop-blur-xl p-8 rounded-3xl border border-slate-700 shadow-2xl relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-emerald-500"></div>
+                
+                <div className="text-center mb-8">
+                  <div className="flex justify-center mb-5">
+                    <div className="bg-blue-500/10 p-5 rounded-full border border-blue-500/20 shadow-[0_0_30px_rgba(59,130,246,0.15)]">
+                      <Icon name="lightbulb" className="text-3xl text-blue-400" />
+                    </div>
+                  </div>
+                  <h1 className="text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-emerald-400 mb-2 tracking-tight">
+                    TÓTAL REPORT®
+                  </h1>
+                  <p className="text-slate-400 text-sm font-medium uppercase tracking-widest">Master Plan Intensivo</p>
+                </div>
+
+                {selectedUser ? (
+                  <div className="animate-in fade-in zoom-in duration-200">
+                    <button 
+                      onClick={() => setSelectedUser(null)}
+                      className="flex items-center gap-2 text-slate-400 hover:text-white text-sm mb-6 transition-colors"
+                    >
+                      <Icon name="arrow-left" className="text-xs" /> Volver a usuarios
+                    </button>
+                    
+                    <div className="bg-slate-900/80 p-5 rounded-2xl border border-slate-700/80 mb-6 flex items-center gap-5 shadow-inner">
+                      <div className="w-14 h-14 rounded-full bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center text-xl font-bold text-emerald-400 border border-slate-600">
+                        {selectedUser.name.charAt(0).toUpperCase()}
+                      </div>
+                      <div>
+                        <h3 className="text-white font-bold text-lg">{selectedUser.name}</h3>
+                        <p className="text-xs text-slate-400 uppercase tracking-wider font-semibold mt-1">{selectedUser.role === 'admin' ? 'Acceso Administrativo' : 'Acceso Estudiante'}</p>
+                      </div>
+                    </div>
+
+                    <form onSubmit={handleLoginSubmit} className="space-y-5">
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-300 mb-2 flex items-center gap-2">
+                          <Icon name="lock" className="text-slate-500"/> Contraseña de acceso
+                        </label>
+                        <input 
+                          type="password" 
+                          value={passwordInput}
+                          onChange={(e) => setPasswordInput(e.target.value)}
+                          placeholder="Ingresa tu contraseña de seguridad..." 
+                          className="w-full bg-slate-900/50 border border-slate-600 rounded-xl px-4 py-3.5 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all font-medium placeholder-slate-600"
+                          autoFocus
+                        />
+                        {loginError && <p className="text-red-400 text-xs font-semibold mt-2 flex items-center gap-1"><Icon name="circle-exclamation"/> {loginError}</p>}
+                      </div>
+                      <button type="submit" className="w-full bg-blue-600 hover:bg-blue-500 text-white px-4 py-3.5 rounded-xl font-bold text-sm transition-all shadow-lg shadow-blue-900/20 active:scale-[0.98]">
+                        Iniciar Sesión Segura
+                      </button>
+                    </form>
+                  </div>
+                ) : (
+                  <div className="animate-in fade-in duration-200">
+                    <div className="mb-8">
+                      <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">Acceder al Hub de Conocimiento</h2>
+                      <div className="space-y-3 max-h-60 overflow-y-auto custom-scrollbar pr-2">
+                        {users.map(u => (
+                          <button 
+                            key={u.id} 
+                            onClick={() => handleSelectUser(u)}
+                            className="w-full flex items-center justify-between p-4 rounded-2xl bg-slate-800/60 hover:bg-slate-700/80 border border-slate-700/50 transition-all text-left group hover:scale-[1.02]"
+                          >
+                            <div className="flex items-center gap-4">
+                              <div className="w-10 h-10 rounded-full bg-slate-900/50 flex items-center justify-center border border-slate-700/50">
+                                {u.role === 'admin' ? <Icon name="shield-halved" className="text-blue-400" /> : <Icon name="book-open" className="text-emerald-400" />}
+                              </div>
+                              <span className="font-semibold text-slate-200">{u.name}</span>
+                            </div>
+                            <span className="text-[10px] px-2 py-1 bg-slate-900 rounded-md text-slate-400 font-bold uppercase flex items-center gap-1 border border-slate-800">
+                              {u.role === 'admin' ? 'Gestor' : 'Implementador'} <Icon name="chevron-right" className="ml-1 text-[10px] opacity-50"/>
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="border-t border-slate-700/80 pt-6">
+                      <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">Registro Rápido</h2>
+                      <form onSubmit={handleCreateUser} className="space-y-3">
+                        <input 
+                          type="text" 
+                          value={newUserName}
+                          onChange={(e) => setNewUserName(e.target.value)}
+                          placeholder="Nombre completo..." 
+                          className="w-full bg-slate-900/50 border border-slate-600 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-emerald-500 transition-colors"
+                        />
+                        <div className="flex gap-2">
+                          <input 
+                            type="password" 
+                            value={newUserPassword}
+                            onChange={(e) => setNewUserPassword(e.target.value)}
+                            placeholder="Contraseña..." 
+                            className="flex-1 bg-slate-900/50 border border-slate-600 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-emerald-500 transition-colors"
+                          />
+                          <button type="submit" className="bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-3 rounded-xl text-sm font-bold transition-all shadow-lg shadow-emerald-900/20 active:scale-95">
+                            Crear Perfil
+                          </button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        }
+
+        function Sidebar({ currentUser, onLogout }) {
+          return (
+            <div className="hidden md:flex w-72 bg-slate-900 border-r border-slate-800 flex-col h-full z-10 shadow-2xl">
+              <div className="p-6 border-b border-slate-800">
+                <h2 className="text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-emerald-400 tracking-tight">TÓTAL REPORT</h2>
+                <p className="text-xs text-slate-500 mt-2 font-semibold uppercase tracking-widest flex items-center gap-2"><Icon name="layer-group" /> Guías Técnicas</p>
+              </div>
+              <div className="flex-1 p-5 space-y-3">
+                <div className="flex items-center gap-4 w-full text-left px-5 py-4 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20 shadow-inner">
+                  {currentUser.role === 'admin' ? <Icon name="layer-group" className="text-xl" /> : <Icon name="book-open" className="text-xl" />}
+                  <span className="font-bold text-sm">
+                    {currentUser.role === 'admin' ? 'Gestión de Conocimiento' : 'Mi Ruta de Aprendizaje'}
+                  </span>
+                </div>
+              </div>
+              
+              {/* Botón de Cierre de Sesión garantizado en Sidebar (Desktop) */}
+              <div className="p-5 border-t border-slate-800 bg-slate-900/80">
+                <div className="flex items-center gap-3 mb-4 px-2">
+                   <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-sm font-bold text-slate-300 border border-slate-700">
+                    {currentUser.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="overflow-hidden">
+                    <p className="text-sm font-bold text-white truncate">{currentUser.name}</p>
+                    <p className="text-[10px] text-slate-500 uppercase tracking-wider">{currentUser.role === 'admin' ? 'Administrador' : 'Implementador'}</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={onLogout} 
+                  className="flex items-center justify-center gap-3 w-full px-4 py-3 rounded-xl text-slate-300 bg-slate-800 hover:bg-red-500/10 hover:text-red-400 border border-slate-700 hover:border-red-500/30 transition-all font-semibold text-sm"
+                >
+                  <Icon name="right-from-bracket" />
+                  <span>Cerrar Sesión</span>
+                </button>
+              </div>
+            </div>
+          );
+        }
+
+        function TopBar({ currentUser, onLogout }) {
+          return (
+            <div className="h-[72px] border-b border-slate-800 bg-slate-900/80 backdrop-blur-md flex items-center justify-between px-6 z-20 shrink-0 sticky top-0 shadow-sm">
+              <div className="flex items-center gap-4">
+                <h2 className="text-lg font-bold text-slate-200 md:hidden flex items-center gap-2">
+                  <Icon name="book-open" className="text-emerald-400 text-sm"/> {currentUser.role === 'admin' ? 'Gestor' : 'Guías'}
+                </h2>
+                <div className="hidden md:flex items-center gap-3 bg-slate-800/50 px-4 py-1.5 rounded-full border border-slate-700/50">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span className="text-xs text-slate-400 font-medium">Entorno Activo</span>
+                </div>
+              </div>
+
+              {/* Controles de usuario y Logout superior (Visible en Mobile y opcional en Desktop) */}
+              <div className="flex items-center gap-4">
+                <div className="hidden sm:block text-right mr-2">
+                  <p className="text-sm font-bold leading-tight text-white">{currentUser.name}</p>
+                  <p className="text-[10px] text-slate-400 uppercase tracking-widest font-semibold">{currentUser.role === 'admin' ? 'Arquitecto' : 'Implementador'}</p>
+                </div>
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center text-sm font-bold text-emerald-400 border border-slate-600 shadow-md">
+                  {currentUser.name.charAt(0).toUpperCase()}
+                </div>
+                
+                <div className="w-px h-8 bg-slate-700 mx-1 md:hidden"></div>
+
+                <button 
+                  onClick={onLogout} 
+                  className="md:hidden flex items-center justify-center w-10 h-10 rounded-full bg-slate-800 text-slate-400 hover:text-red-400 hover:bg-red-500/10 border border-slate-700 transition-all shadow-sm"
+                  title="Cerrar Sesión"
+                >
+                  <Icon name="right-from-bracket" />
+                </button>
+              </div>
+            </div>
+          );
+        }
+
+        // --- ADMIN DASHBOARD (GESTOR DE CONOCIMIENTO) ---
+        function AdminDashboard({ users, setUsers, guides, setGuides, progress, setProgress }) {
+          const [activeTab, setActiveTab] = useState('guides'); 
+          const implementers = users.filter(u => u.role === 'user');
+
+          return (
+            <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12">
+              <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 bg-slate-800/30 p-6 md:p-8 rounded-3xl border border-slate-800/50">
+                <div>
+                  <h1 className="text-3xl font-extrabold text-white mb-2 tracking-tight">Centro de Dirección Técnica</h1>
+                  <p className="text-slate-400 text-sm font-medium">Panel de creación de guías maestras y auditoría de la madurez del equipo.</p>
+                </div>
+                <div className="flex bg-slate-900/80 p-1.5 rounded-xl border border-slate-700/80 shadow-inner overflow-x-auto custom-scrollbar">
+                  <button onClick={() => setActiveTab('guides')} className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeTab === 'guides' ? 'bg-slate-700 text-white shadow-md' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'}`}><Icon name="book-open"/> Catálogo</button>
+                  <button onClick={() => setActiveTab('users')} className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeTab === 'users' ? 'bg-slate-700 text-white shadow-md' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'}`}><Icon name="users"/> Equipo</button>
+                  <button onClick={() => setActiveTab('overview')} className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeTab === 'overview' ? 'bg-slate-700 text-white shadow-md' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'}`}><Icon name="bullseye"/> Analytics</button>
+                  <button onClick={() => setActiveTab('data')} className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeTab === 'data' ? 'bg-slate-700 text-white shadow-md' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'}`}><Icon name="database"/> Respaldos</button>
+                </div>
+              </div>
+
+              <div className="animate-in fade-in duration-300">
+                {activeTab === 'guides' && <AdminGuides guides={guides} setGuides={setGuides} />}
+                {activeTab === 'users' && <AdminUsers users={users} setUsers={setUsers} guides={guides} progress={progress} />}
+                {activeTab === 'overview' && <AdminOverview implementers={implementers} guides={guides} progress={progress} />}
+                {activeTab === 'data' && <AdminData users={users} setUsers={setUsers} guides={guides} setGuides={setGuides} progress={progress} setProgress={setProgress} />}
+              </div>
+            </div>
+          );
+        }
+
+        function AdminOverview({ implementers, guides, progress }) {
+          let totalPracticesAll = 0;
+          let totalAdoptedAll = 0;
+
+          implementers.forEach(user => {
+            guides.forEach(guide => {
+              guide.modules.forEach(mod => {
+                mod.practices.forEach(prac => {
+                  totalPracticesAll++;
+                  if (progress[user.id]?.[guide.id]?.[prac.id]) totalAdoptedAll++;
+                });
+              });
+            });
+          });
+
+          const adoptionRate = totalPracticesAll === 0 ? 0 : Math.round((totalAdoptedAll / totalPracticesAll) * 100);
+
+          return (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="bg-slate-800/40 p-8 rounded-3xl border border-slate-700/50 flex flex-col justify-center gap-4 hover:border-emerald-500/30 transition-colors">
+                <div className="flex justify-between items-start">
+                  <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 border border-emerald-500/20"><Icon name="lightbulb" className="text-2xl" /></div>
+                  <span className="px-2.5 py-1 bg-slate-900 rounded-lg text-[10px] font-bold text-slate-400 uppercase tracking-widest border border-slate-700">Métrica Global</span>
+                </div>
+                <div>
+                  <p className="text-5xl font-black text-white tracking-tighter">{adoptionRate}<span className="text-2xl text-emerald-400">%</span></p>
+                  <p className="text-sm text-slate-400 font-medium mt-1">Tasa de Adopción General del Equipo</p>
+                </div>
+              </div>
+
+              <div className="bg-slate-800/40 p-8 rounded-3xl border border-slate-700/50 flex flex-col justify-center gap-4 hover:border-blue-500/30 transition-colors">
+                <div className="flex justify-between items-start">
+                  <div className="w-14 h-14 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-400 border border-blue-500/20"><Icon name="book-open" className="text-2xl" /></div>
+                </div>
+                <div>
+                  <p className="text-5xl font-black text-white tracking-tighter">{guides.length}</p>
+                  <p className="text-sm text-slate-400 font-medium mt-1">Guías de Conocimiento Publicadas</p>
+                </div>
+              </div>
+
+              <div className="bg-slate-800/40 p-8 rounded-3xl border border-slate-700/50 flex flex-col justify-center gap-4 hover:border-purple-500/30 transition-colors">
+                <div className="flex justify-between items-start">
+                  <div className="w-14 h-14 rounded-2xl bg-purple-500/10 flex items-center justify-center text-purple-400 border border-purple-500/20"><Icon name="users" className="text-2xl" /></div>
+                </div>
+                <div>
+                  <p className="text-5xl font-black text-white tracking-tighter">{implementers.length}</p>
+                  <p className="text-sm text-slate-400 font-medium mt-1">Implementadores Activos en Hub</p>
+                </div>
+              </div>
+            </div>
+          );
+        }
+
+        function AdminGuides({ guides, setGuides }) {
+          const [isBuilding, setIsBuilding] = useState(false);
+
+          const handleDeleteGuide = (guideId) => {
+            if(window.confirm('¿ELIMINACIÓN CRÍTICA: Estás seguro de borrar esta guía maestra? Se perderá todo el contenido, el texto y el progreso histórico del equipo asociado a ella.')) {
+              setGuides(guides.filter(g => g.id !== guideId));
+            }
+          };
+
+          if (isBuilding) {
+            return <GuideBuilder onSave={(newGuide) => { setGuides([...guides, newGuide]); setIsBuilding(false); }} onCancel={() => setIsBuilding(false)} />;
+          }
+
+          return (
+            <div className="space-y-6">
+              <div className="flex justify-between items-center bg-slate-800/40 p-6 md:p-8 rounded-3xl border border-slate-700/50">
+                <div>
+                  <h3 className="text-xl font-bold text-white mb-1">Repositorio de Guías Oficiales</h3>
+                  <p className="text-sm text-slate-400">Administra los manuales de buenas prácticas.</p>
+                </div>
+                <button onClick={() => setIsBuilding(true)} className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-3 rounded-xl text-sm font-bold transition-all shadow-lg shadow-emerald-900/20 active:scale-95">
+                  <Icon name="plus" /> Redactar Guía
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 gap-6">
+                {guides.map(guide => (
+                  <div key={guide.id} className="bg-slate-800/30 p-8 rounded-3xl border border-slate-700/50 flex flex-col group relative overflow-hidden transition-colors hover:bg-slate-800/50">
+                    <div className="absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b from-blue-500 to-emerald-500 opacity-50 group-hover:opacity-100 transition-opacity"></div>
+                    
+                    <div className="flex justify-between items-start mb-4">
+                      <div className="pl-4">
+                        <span className="px-3 py-1 bg-slate-900 rounded-lg text-xs font-bold text-emerald-400 uppercase tracking-widest border border-slate-700 mb-4 inline-block">Material Oficial</span>
+                        <h4 className="text-2xl font-extrabold text-white pr-4 leading-tight">{guide.title}</h4>
+                      </div>
+                      <button 
+                        onClick={() => handleDeleteGuide(guide.id)}
+                        className="text-slate-500 hover:text-white bg-slate-900/50 hover:bg-red-500 transition-all opacity-0 group-hover:opacity-100 p-3 rounded-xl border border-slate-700 hover:border-red-600 shadow-sm"
+                        title="Destruir Guía"
+                      >
+                        <Icon name="trash-can" className="text-sm" />
+                      </button>
+                    </div>
+                    <p className="text-[15px] text-slate-300 mb-8 pl-4 flex-1 leading-relaxed max-w-4xl">{guide.description}</p>
+                    
+                    <div className="flex items-center gap-6 text-sm font-bold text-slate-400 border-t border-slate-700/50 pt-5 mt-auto pl-4">
+                      <span className="flex items-center gap-2 bg-slate-900 px-4 py-2 rounded-lg border border-slate-800"><Icon name="layer-group" className="text-blue-400" /> {guide.modules.length} Módulos</span>
+                      <span className="flex items-center gap-2 bg-slate-900 px-4 py-2 rounded-lg border border-slate-800"><Icon name="lightbulb" className="text-amber-400" /> {guide.modules.reduce((acc, mod) => acc + mod.practices.length, 0)} Temáticas de Estudio</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        }
+
+        function GuideBuilder({ onSave, onCancel }) {
+          const [title, setTitle] = useState('');
+          const [description, setDescription] = useState('');
+          const [modules, setModules] = useState([]);
+
+          const addModule = () => {
+            setModules([...modules, { id: `mod_${generateId()}`, title: '', practices: [] }]);
+          };
+
+          const updateModuleTitle = (index, value) => {
+            const newModules = [...modules];
+            newModules[index].title = value;
+            setModules(newModules);
+          };
+
+          const addPractice = (modIndex) => {
+            const newModules = [...modules];
+            newModules[modIndex].practices.push({ id: `prac_${generateId()}`, title: '', details: '' });
+            setModules(newModules);
+          };
+
+          const updatePractice = (modIndex, pracIndex, field, value) => {
+            const newModules = [...modules];
+            newModules[modIndex].practices[pracIndex][field] = value;
+            setModules(newModules);
+          };
+
+          const removePractice = (modIndex, pracIndex) => {
+            const newModules = [...modules];
+            newModules[modIndex].practices.splice(pracIndex, 1);
+            setModules(newModules);
+          };
+
+          const handleSave = () => {
+            if (!title) return alert('La guía necesita un título obligatorio.');
+            const newGuide = { id: `guide_${generateId()}`, title, description, modules };
+            onSave(newGuide);
+          };
+
+          return (
+            <div className="bg-slate-800/40 p-6 md:p-10 rounded-3xl border border-slate-700/50 max-w-5xl mx-auto space-y-10 animate-in fade-in zoom-in-95 duration-200 shadow-2xl">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-700/80 pb-6 gap-6">
+                <div>
+                  <h2 className="text-3xl font-extrabold text-white flex items-center gap-3"><Icon name="book-open" className="text-emerald-400"/> Editor de Contenido TÓTAL</h2>
+                  <p className="text-slate-400 text-sm mt-2 font-medium">Soporta <span className="bg-slate-800 text-slate-200 px-2 py-0.5 rounded font-mono text-xs">Markdown</span> en los detalles técnicos.</p>
+                </div>
+                <div className="flex gap-3 w-full md:w-auto">
+                  <button onClick={onCancel} className="flex-1 md:flex-none px-6 py-3 text-sm font-bold text-slate-400 hover:text-white bg-slate-900/50 hover:bg-slate-800 rounded-xl transition-all border border-slate-700">Cancelar</button>
+                  <button onClick={handleSave} className="flex-1 md:flex-none flex justify-center items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-8 py-3 rounded-xl text-sm font-bold transition-all shadow-lg shadow-emerald-900/30">
+                    <Icon name="floppy-disk" /> Guardar y Publicar
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-sm font-bold text-slate-400 uppercase tracking-widest mb-2">Título de la Guía Oficial</label>
+                  <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="Ej. Arquitectura Avanzada de Datos en la Nube..." className="w-full bg-slate-900/80 border border-slate-600 rounded-xl px-5 py-4 text-white text-lg font-bold focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all placeholder-slate-600" />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-slate-400 uppercase tracking-widest mb-2">Resumen / Objetivos</label>
+                  <textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Escribe un párrafo inspirador sobre el propósito de este programa..." rows="3" className="w-full bg-slate-900/80 border border-slate-600 rounded-xl px-5 py-4 text-slate-200 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 resize-none transition-all placeholder-slate-600 leading-relaxed"></textarea>
+                </div>
+              </div>
+
+              <div className="space-y-8 border-t border-slate-700/80 pt-8">
+                <h3 className="text-xl font-bold text-white flex items-center gap-2"><Icon name="layer-group" className="text-blue-400"/> Módulos y Temario</h3>
+                
+                {modules.map((mod, mIdx) => (
+                  <div key={mod.id} className="bg-slate-900/50 p-6 md:p-8 rounded-2xl border border-slate-700 shadow-inner relative">
+                    <div className="absolute top-0 left-0 w-1.5 h-full bg-blue-500/50 rounded-l-2xl"></div>
+                    
+                    <div className="flex items-center gap-4 mb-6 ml-2">
+                      <span className="bg-blue-900/50 text-blue-400 w-10 h-10 rounded-xl flex items-center justify-center font-black text-lg border border-blue-500/30 shrink-0 shadow-sm">{mIdx + 1}</span>
+                      <input type="text" value={mod.title} onChange={e => updateModuleTitle(mIdx, e.target.value)} placeholder="Nombre del Módulo (Ej. Fase 1: Calidad Estructural)" className="flex-1 bg-transparent border-b border-slate-600 px-2 py-2 text-white focus:outline-none focus:border-blue-500 font-extrabold text-xl placeholder-slate-700 transition-colors" />
+                    </div>
+                    
+                    <div className="pl-2 md:pl-14 space-y-6">
+                      {mod.practices.map((prac, pIdx) => (
+                        <div key={prac.id} className="bg-slate-800/80 p-5 md:p-6 rounded-xl border border-slate-600/80 relative group hover:border-slate-500 transition-colors shadow-md">
+                          <div className="flex justify-between items-start mb-4">
+                             <div className="flex-1 mr-8">
+                                <label className="text-[10px] font-bold uppercase tracking-widest text-emerald-400 mb-1 block">Título de la Práctica</label>
+                                <input type="text" value={prac.title} onChange={e => updatePractice(mIdx, pIdx, 'title', e.target.value)} placeholder="Ej. Detección Vectorizada de Anomalías..." className="w-full bg-transparent border-b border-slate-600 pb-2 text-white focus:outline-none focus:border-emerald-500 font-bold text-lg placeholder-slate-600" />
+                             </div>
+                             <button onClick={() => removePractice(mIdx, pIdx)} className="text-slate-500 hover:text-white bg-slate-900 hover:bg-red-500 transition-colors opacity-0 group-hover:opacity-100 p-2.5 rounded-lg border border-slate-700 absolute top-4 right-4"><Icon name="trash-can"/></button>
+                          </div>
+                          
+                          <div>
+                             <label className="text-[10px] font-bold uppercase tracking-widest text-blue-400 mb-2 flex items-center gap-2"><Icon name="markdown" className="fab fa-markdown text-sm"/> Contenido Teórico y Taller (Soporta Markdown)</label>
+                             <textarea value={prac.details} onChange={e => updatePractice(mIdx, pIdx, 'details', e.target.value)} placeholder="Escribe usando Markdown: **Negritas**, - Listas, [Enlaces](url) y `código`..." rows="8" className="w-full bg-slate-900/90 border border-slate-700 rounded-xl p-5 text-[15px] font-mono leading-relaxed text-slate-300 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 resize-y custom-scrollbar placeholder-slate-700 shadow-inner"></textarea>
+                          </div>
+                        </div>
+                      ))}
+                      
+                      <button onClick={() => addPractice(mIdx)} className="flex items-center justify-center w-full gap-2 text-sm font-bold text-blue-400 hover:text-white transition-colors mt-4 p-4 bg-blue-900/20 rounded-xl hover:bg-blue-600 border border-blue-900/50 border-dashed hover:border-solid">
+                        <Icon name="plus" /> Añadir Nueva Temática a este Módulo
+                      </button>
+                    </div>
+                  </div>
+                ))}
+
+                <button onClick={addModule} className="w-full py-6 border-2 border-dashed border-slate-600 rounded-2xl text-slate-400 font-extrabold text-lg hover:border-emerald-500 hover:text-emerald-400 transition-all flex items-center justify-center gap-3 bg-slate-900/30 hover:bg-slate-800/50 shadow-sm">
+                  <Icon name="folder-plus" className="text-2xl" /> Agregar Gran Módulo de Estudio
+                </button>
+              </div>
+            </div>
+          );
+        }
+
+        function AdminUsers({ users, setUsers, guides, progress }) {
+          const implementers = users.filter(u => u.role === 'user');
+          const [newUserName, setNewUserName] = useState('');
+          const [newUserPassword, setNewUserPassword] = useState('');
+
+          const handleAddUser = (e) => {
+            e.preventDefault();
+            if (!newUserName.trim() || !newUserPassword.trim()) return;
+            setUsers([...users, { 
+              id: `usr_${Date.now()}`, 
+              name: newUserName.trim(), 
+              role: 'user',
+              password: newUserPassword.trim()
+            }]);
+            setNewUserName('');
+            setNewUserPassword('');
+          };
+
+          const handleDeleteUser = (userId) => {
+            if (window.confirm('¿ELIMINACIÓN DE USUARIO: Seguro que deseas eliminar el acceso y todo el progreso de este implementador?')) {
+              setUsers(users.filter(u => u.id !== userId));
+            }
+          };
+
+          const calculateUserOverallProgress = (userId) => {
+            let total = 0, completed = 0;
+            guides.forEach(g => {
+              g.modules.forEach(m => {
+                m.practices.forEach(p => {
+                  total++;
+                  if (progress[userId]?.[g.id]?.[p.id]) completed++;
+                });
+              });
+            });
+            return total === 0 ? 0 : Math.round((completed / total) * 100);
+          };
+
+          return (
+            <div className="space-y-8">
+              <div className="bg-slate-800/40 p-8 rounded-3xl border border-slate-700/50 flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
+                <div className="max-w-md">
+                  <h3 className="text-xl font-extrabold text-white mb-2">Reclutamiento de Talento</h3>
+                  <p className="text-sm text-slate-400 font-medium leading-relaxed">Genera accesos seguros para que nuevos ingenieros se unan al programa intensivo de entrenamiento.</p>
+                </div>
+                <form onSubmit={handleAddUser} className="w-full md:w-auto flex flex-col sm:flex-row gap-3 bg-slate-900/50 p-4 rounded-2xl border border-slate-800">
+                  <input 
+                    type="text" 
+                    value={newUserName}
+                    onChange={(e) => setNewUserName(e.target.value)}
+                    placeholder="Nombre y Apellido" 
+                    className="w-full sm:w-48 bg-slate-800 border border-slate-600 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-emerald-500 font-medium"
+                  />
+                  <input 
+                    type="text" 
+                    value={newUserPassword}
+                    onChange={(e) => setNewUserPassword(e.target.value)}
+                    placeholder="Generar Password" 
+                    className="w-full sm:w-40 bg-slate-800 border border-slate-600 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-emerald-500 font-medium font-mono"
+                  />
+                  <button type="submit" className="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-3 rounded-xl text-sm font-bold transition-all shadow-md active:scale-95 whitespace-nowrap">
+                    <Icon name="user-plus" /> Matricular
+                  </button>
+                </form>
+              </div>
+
+              <div className="bg-slate-800/30 rounded-3xl border border-slate-700/50 overflow-hidden shadow-xl">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-slate-900/80 text-slate-400 text-xs font-bold uppercase tracking-widest border-b border-slate-700">
+                      <th className="p-5">Ingeniero Implementador</th>
+                      <th className="p-5">Avance de Certificación</th>
+                      <th className="p-5 text-right">Revocar</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800/50 text-sm">
+                    {implementers.map(user => {
+                      const prog = calculateUserOverallProgress(user.id);
+                      const isComplete = prog === 100;
+                      return (
+                        <tr key={user.id} className="hover:bg-slate-800/60 transition-colors group">
+                          <td className="p-5 text-white font-bold flex items-center gap-4">
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-black text-lg border ${isComplete ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/50' : 'bg-slate-700 text-slate-300 border-slate-600'}`}>
+                              {user.name.charAt(0).toUpperCase()}
+                            </div>
+                            <div className="flex flex-col">
+                               <span>{user.name}</span>
+                               <span className="text-[10px] text-slate-500 uppercase tracking-widest font-mono mt-0.5"><Icon name="key" className="mr-1"/> {user.password}</span>
+                            </div>
+                          </td>
+                          <td className="p-5">
+                            <div className="flex items-center gap-4">
+                              <div className="flex-1 max-w-[250px] h-2.5 bg-slate-900 rounded-full overflow-hidden border border-slate-800">
+                                <div className={`h-full transition-all duration-1000 ease-out ${isComplete ? 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.8)]' : 'bg-blue-500'}`} style={{ width: `${prog}%` }}></div>
+                              </div>
+                              <span className={`font-black w-10 text-right ${isComplete ? 'text-emerald-400' : 'text-slate-300'}`}>{prog}%</span>
+                            </div>
+                          </td>
+                          <td className="p-5 text-right">
+                            <button onClick={() => handleDeleteUser(user.id)} className="text-slate-600 hover:text-white bg-slate-900 hover:bg-red-500 transition-all opacity-0 group-hover:opacity-100 p-2.5 rounded-xl border border-slate-700 hover:border-red-600 shadow-sm" title="Revocar Acceso">
+                              <Icon name="user-minus" />
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          );
+        }
+
+        function AdminData({ users, setUsers, guides, setGuides, progress, setProgress }) {
+          const handleExport = () => {
+            // Avoid exporting passwords in plain text ideally, but for this local tool we export the whole state
+            const data = { users, guides, progress };
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'total_report_knowledge_db.json';
+            a.click();
+            URL.revokeObjectURL(url);
+          };
+
+          const handleImport = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (event) => {
+              try {
+                const data = JSON.parse(event.target.result);
+                if (data.users) setUsers(data.users);
+                if (data.guides) setGuides(data.guides);
+                if (data.progress) setProgress(data.progress);
+                alert('¡ÉXITO! La base de conocimiento y perfiles se restauró correctamente en este navegador.');
+              } catch (err) {
+                alert('ERROR CRÍTICO: El archivo seleccionado no tiene un formato JSON válido soportado por el Hub.');
+              }
+            };
+            reader.readAsText(file);
+            e.target.value = null;
+          };
+
+          return (
+            <div className="bg-slate-800/40 p-8 rounded-3xl border border-slate-700/50 text-center md:text-left">
+              <h3 className="text-2xl font-extrabold text-white mb-2">Ingeniería de Respaldos (DRP)</h3>
+              <p className="text-sm text-slate-400 font-medium mb-10 max-w-2xl">Dado que este Hub opera bajo arquitectura Serverless estática (memoria de navegador local), es fundamental que exportes tu base de datos regularmente para compartirla o prevenir pérdida de data si limpias tu caché.</p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <button onClick={handleExport} className="group bg-slate-900/60 p-8 rounded-3xl border border-slate-700 hover:border-blue-500/50 hover:bg-slate-800 transition-all flex flex-col items-center text-center shadow-lg hover:shadow-blue-900/20 active:scale-95">
+                  <div className="w-20 h-20 bg-blue-500/10 rounded-2xl flex items-center justify-center mb-6 border border-blue-500/20 group-hover:scale-110 transition-transform">
+                    <Icon name="download" className="text-4xl text-blue-400" />
+                  </div>
+                  <h4 className="text-xl text-white font-black mb-2 tracking-tight">Generar Snapshot (JSON)</h4>
+                  <p className="text-sm text-slate-400 font-medium leading-relaxed max-w-xs">Empaqueta y descarga toda la base operativa: Guías redactadas en Markdown, perfiles con contraseñas e histórico de progreso.</p>
+                </button>
+
+                <label className="group bg-slate-900/60 p-8 rounded-3xl border border-slate-700 hover:border-emerald-500/50 hover:bg-slate-800 transition-all flex flex-col items-center text-center shadow-lg hover:shadow-emerald-900/20 cursor-pointer active:scale-95">
+                  <div className="w-20 h-20 bg-emerald-500/10 rounded-2xl flex items-center justify-center mb-6 border border-emerald-500/20 group-hover:scale-110 transition-transform">
+                    <Icon name="upload" className="text-4xl text-emerald-400" />
+                  </div>
+                  <h4 className="text-xl text-white font-black mb-2 tracking-tight">Restaurar Snapshot (JSON)</h4>
+                  <p className="text-sm text-slate-400 font-medium leading-relaxed max-w-xs">Sobrescribe el entorno actual cargando un archivo <code className="bg-slate-800 px-1 rounded text-slate-300">.json</code> generado previamente. Acción destructiva para la data local actual.</p>
+                  <input type="file" accept=".json" className="hidden" onChange={handleImport} />
+                </label>
+              </div>
+            </div>
+          );
+        }
+
+        // --- IMPLEMENTER DASHBOARD (VISTA TIPO LECTOR/GUÍA) ---
+        function ImplementerDashboard({ currentUser, guides, progress, setProgress }) {
+          const [selectedGuideId, setSelectedGuideId] = useState(guides[0]?.id || null);
+          const [expandedPractices, setExpandedPractices] = useState({});
+          const [expandedModules, setExpandedModules] = useState({});
+
+          const selectedGuide = guides.find(g => g.id === selectedGuideId);
+
+          // EFECTO MODIFICADO: Ahora TODAS las prácticas inician colapsadas (false) al entrar
+          useEffect(() => {
+            if (selectedGuide) {
+              const initialExpansion = {};
+              selectedGuide.modules.forEach(m => {
+                m.practices.forEach(p => {
+                  initialExpansion[p.id] = false; // <-- Inicializa todas como colapsadas
+                });
+              });
+              setExpandedPractices(initialExpansion);
+            }
+          }, [selectedGuideId, selectedGuide, currentUser.id, progress]);
+
+          // Inicializa los módulos abiertos por defecto
+          useEffect(() => {
+            if (selectedGuide) {
+              setExpandedModules(prev => {
+                const newState = { ...prev };
+                selectedGuide.modules.forEach(m => {
+                  if (newState[m.id] === undefined) {
+                    newState[m.id] = true;
+                  }
+                });
+                return newState;
+              });
+            }
+          }, [selectedGuideId, selectedGuide]);
+
+          const togglePracticeExpanded = (practiceId) => {
+            setExpandedPractices(prev => ({ ...prev, [practiceId]: !prev[practiceId] }));
+          };
+
+          const toggleModuleExpanded = (moduleId) => {
+            setExpandedModules(prev => ({ ...prev, [moduleId]: !prev[moduleId] }));
+          };
+
+          const markPracticeAsImplemented = (guideId, practiceId, isCurrentlyCompleted) => {
+            const currentProg = progress[currentUser.id] || {};
+            const guideProg = currentProg[guideId] || {};
+            
+            setProgress({
+              ...progress,
+              [currentUser.id]: {
+                ...currentProg,
+                [guideId]: {
+                  ...guideProg,
+                  [practiceId]: !isCurrentlyCompleted
+                }
+              }
+            });
+
+            if (!isCurrentlyCompleted) {
+               setExpandedPractices(prev => ({ ...prev, [practiceId]: false }));
+            }
+          };
+
+          const calculateAdoption = (guide) => {
+            if (!guide) return 0;
+            let total = 0, completed = 0;
+            guide.modules.forEach(m => {
+              m.practices.forEach(p => {
+                total++;
+                if (progress[currentUser.id]?.[guide.id]?.[p.id]) completed++;
+              });
+            });
+            return total === 0 ? 0 : Math.round((completed / total) * 100);
+          };
+
+          if (guides.length === 0) {
+            return (
+                <div className="flex flex-col items-center justify-center h-full text-slate-500 mt-20 animate-in fade-in">
+                    <Icon name="book-open" className="text-7xl mb-6 opacity-20"/> 
+                    <p className="text-xl font-bold">No hay contenido de estudio asignado.</p>
+                    <p className="text-sm mt-2">El Arquitecto de Datos aún no ha publicado el Master Plan.</p>
+                </div>
+            );
+          }
+
+          const currentAdoption = calculateAdoption(selectedGuide);
+          const isFullyCompleted = currentAdoption === 100;
+
+          return (
+            <div className="max-w-5xl mx-auto space-y-8 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              
+              {/* Menú de Tabs de Guías Visualmente Atractivo */}
+              {guides.length > 1 && (
+                <div className="flex gap-4 overflow-x-auto custom-scrollbar pb-3">
+                  {guides.map(guide => {
+                    const isSelected = selectedGuideId === guide.id;
+                    return (
+                      <button 
+                        key={guide.id}
+                        onClick={() => setSelectedGuideId(guide.id)}
+                        className={`flex-shrink-0 px-6 py-4 rounded-2xl border transition-all duration-300 font-bold ${isSelected ? 'bg-emerald-900/30 border-emerald-500 text-white shadow-lg shadow-emerald-900/20' : 'bg-slate-800/40 border-slate-700/50 text-slate-400 hover:bg-slate-800 hover:text-slate-200 hover:border-slate-600'}`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <Icon name="book-open" className={isSelected ? 'text-emerald-400 text-lg' : 'text-lg'} />
+                          <span className="whitespace-nowrap">{guide.title.substring(0,40)}{guide.title.length > 40 ? '...' : ''}</span>
+                        </div>
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+
+              {selectedGuide && (
+                <div className="space-y-10">
+                  {/* Hero Header de la Guía */}
+                  <div className={`p-8 md:p-12 rounded-[2rem] border shadow-2xl relative overflow-hidden transition-all duration-700 ${isFullyCompleted ? 'bg-gradient-to-br from-slate-800 to-emerald-900/40 border-emerald-500/50' : 'bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700'}`}>
+                    <div className="absolute -right-20 -bottom-20 opacity-[0.03] pointer-events-none transform -rotate-12 transition-all duration-1000">
+                        <Icon name={isFullyCompleted ? "award" : "book-open"} className="text-[24rem]" />
+                    </div>
+                    
+                    <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+                      <div className="max-w-3xl">
+                        <span className={`inline-block px-4 py-1.5 rounded-lg text-xs font-black uppercase tracking-widest mb-5 border shadow-sm ${isFullyCompleted ? 'bg-emerald-500 text-slate-900 border-emerald-400' : 'bg-blue-500/20 text-blue-400 border-blue-500/30'}`}>
+                          {isFullyCompleted ? 'CERTIFICADO ALCANZADO' : 'Ruta Oficial Obligatoria'}
+                        </span>
+                        <h1 className="text-4xl md:text-5xl font-black text-white mb-4 leading-tight tracking-tighter">{selectedGuide.title}</h1>
+                        <p className="text-slate-300 text-lg leading-relaxed font-medium max-w-2xl">{selectedGuide.description}</p>
+                      </div>
+                      
+                      <div className="shrink-0 flex items-center justify-center bg-slate-900/90 p-6 rounded-3xl border border-slate-700/80 backdrop-blur-xl shadow-2xl">
+                        <div className="text-center">
+                            <p className="text-[11px] text-slate-400 font-bold uppercase tracking-widest mb-3">Auditoría de Avance</p>
+                            <div className="relative inline-flex items-center justify-center">
+                              <svg className="w-28 h-28 transform -rotate-90 filter drop-shadow-lg">
+                                <circle cx="56" cy="56" r="50" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-slate-800" />
+                                <circle cx="56" cy="56" r="50" stroke="currentColor" strokeWidth="8" strokeLinecap="round" fill="transparent" strokeDasharray="314" strokeDashoffset={314 - (314 * currentAdoption) / 100} className="text-emerald-500 transition-all duration-[1.5s] ease-out" />
+                              </svg>
+                              <div className="absolute flex flex-col items-center justify-center">
+                                  <span className="text-3xl font-black text-white tracking-tighter">{currentAdoption}%</span>
+                              </div>
+                            </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {isFullyCompleted && (
+                    <div className="bg-emerald-900/30 border border-emerald-500/50 p-6 md:p-8 rounded-3xl flex flex-col md:flex-row items-center gap-6 animate-in zoom-in-95 duration-500 shadow-[0_0_40px_rgba(16,185,129,0.15)]">
+                      <div className="w-20 h-20 bg-emerald-500/20 rounded-2xl flex items-center justify-center text-emerald-400 shrink-0 border border-emerald-400/30">
+                        <Icon name="medal" className="text-4xl" />
+                      </div>
+                      <div className="text-center md:text-left">
+                        <h4 className="text-emerald-400 text-2xl font-black mb-2 tracking-tight">¡Maestría Técnica Acreditada!</h4>
+                        <p className="text-slate-300 font-medium text-lg">Has estudiado, analizado y refactorizado todas las temáticas complejas de este programa. Estás listo para enfrentarte a la arquitectura de datos real.</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* LOOP DE MÓDULOS */}
+                  <div className="space-y-8 mt-12">
+                    {selectedGuide.modules.map((module, mIdx) => {
+                      let modTotal = module.practices.length;
+                      let modCompleted = module.practices.filter(p => progress[currentUser.id]?.[selectedGuide.id]?.[p.id]).length;
+                      const isModuleExpanded = expandedModules[module.id];
+                      const isModuleDone = modTotal > 0 && modCompleted === modTotal;
+
+                      return (
+                        <div key={module.id} className={`relative bg-slate-800/30 rounded-[2rem] p-4 md:p-6 border transition-all duration-500 ${isModuleDone ? 'border-emerald-500/20' : 'border-slate-700/50'} shadow-lg`}>
+                          
+                          {/* Botón Encabezado del Módulo */}
+                          <div 
+                            onClick={() => toggleModuleExpanded(module.id)}
+                            className="flex items-center justify-between gap-4 cursor-pointer group select-none p-3 rounded-2xl hover:bg-slate-800/60 transition-colors"
+                          >
+                            <div className="flex items-center gap-5">
+                              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center font-black text-2xl shadow-md transition-colors shrink-0 border ${isModuleDone ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40' : 'bg-slate-900 border-slate-700 text-blue-400 group-hover:border-blue-500/50'}`}>
+                                {isModuleDone ? <Icon name="check"/> : mIdx + 1}
+                              </div>
+                              <div className="flex-1">
+                                <h3 className={`text-2xl md:text-3xl font-extrabold transition-colors tracking-tight ${isModuleDone ? 'text-emerald-50' : 'text-white group-hover:text-blue-300'}`}>{module.title}</h3>
+                                <div className="flex items-center gap-3 mt-2">
+                                  <div className="w-32 h-2 bg-slate-900 rounded-full overflow-hidden border border-slate-700">
+                                      <div className={`h-full transition-all duration-500 ${isModuleDone ? 'bg-emerald-500' : 'bg-blue-500'}`} style={{ width: `${(modCompleted/modTotal)*100}%` }}></div>
+                                  </div>
+                                  <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{modCompleted} / {modTotal} TEMAS</span>
+                                </div>
+                              </div>
+                            </div>
+                            <div className={`shrink-0 transition-colors p-3 rounded-xl shadow-inner ${isModuleDone ? 'text-emerald-400 bg-emerald-900/20' : 'text-slate-500 group-hover:text-blue-400 bg-slate-900/80'}`}>
+                              {isModuleExpanded ? <Icon name="chevron-up" className="text-xl" /> : <Icon name="chevron-down" className="text-xl" />}
+                            </div>
+                          </div>
+
+                          {/* LOOP DE PRÁCTICAS (Contenido Renderizado con Markdown) */}
+                          {isModuleExpanded && (
+                            <div className="space-y-5 pl-2 md:pl-[5.5rem] pr-2 md:pr-4 pt-6 border-t border-slate-700/50 mt-4 animate-in slide-in-from-top-4 duration-300 fade-in">
+                              {module.practices.map((practice) => {
+                                const isCompleted = !!progress[currentUser.id]?.[selectedGuide.id]?.[practice.id];
+                                const isExpanded = expandedPractices[practice.id];
+
+                                return (
+                                  <div key={practice.id} className={`rounded-2xl border transition-all duration-300 overflow-hidden shadow-sm ${isCompleted ? 'bg-slate-900/60 border-slate-800' : 'bg-slate-800/80 border-slate-600 hover:border-slate-500'}`}>
+                                    
+                                    {/* Cabecera de la Práctica */}
+                                    <div 
+                                      onClick={() => togglePracticeExpanded(practice.id)}
+                                      className="flex items-center justify-between p-5 md:p-6 cursor-pointer select-none"
+                                    >
+                                      <div className="flex items-center gap-4 pr-4">
+                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 border shadow-inner ${isCompleted ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400' : 'bg-amber-500/10 border-amber-500/30 text-amber-400'}`}>
+                                            {isCompleted ? <Icon name="check" className="text-xl" /> : <Icon name="book-open-reader" className="text-lg" />}
+                                        </div>
+                                        <h4 className={`text-xl font-bold transition-colors tracking-tight ${isCompleted ? 'text-slate-500 line-through decoration-slate-700' : 'text-slate-100'}`}>
+                                          {practice.title}
+                                        </h4>
+                                      </div>
+                                      <div className="shrink-0 text-slate-500 p-2 bg-slate-900/50 rounded-lg">
+                                        {isExpanded ? <Icon name="minus" /> : <Icon name="plus" />}
+                                      </div>
+                                    </div>
+
+                                    {/* Cuerpo del Detalle Renderizando Markdown con "Prose" */}
+                                    {isExpanded && (
+                                      <div className="px-5 pb-6 md:pl-[4.5rem] md:pr-6 border-t border-slate-700/50 pt-6 mt-1 bg-slate-900/30">
+                                        
+                                        {/* INYECCIÓN DE MARKDOWN PARSEADO AQUÍ */}
+                                        <div 
+                                            className="prose prose-invert max-w-none prose-emerald prose-h3:text-2xl prose-h3:font-black prose-h3:text-white prose-h3:border-b prose-h3:border-slate-700 prose-h3:pb-2 prose-h3:mb-6 prose-p:text-slate-300 prose-p:leading-loose prose-li:text-slate-300 prose-strong:text-emerald-400 prose-code:text-blue-300 prose-code:bg-slate-900 prose-code:border prose-code:border-slate-700"
+                                            dangerouslySetInnerHTML={{ __html: practice.details ? marked.parse(practice.details) : '<p class="text-slate-500 italic">No hay detalles documentados.</p>' }}
+                                        >
+                                        </div>
+                                        
+                                        <div className="mt-8 flex justify-end pt-6 border-t border-slate-800">
+                                          <button 
+                                            onClick={(e) => { e.stopPropagation(); markPracticeAsImplemented(selectedGuide.id, practice.id, isCompleted); }}
+                                            className={`flex items-center gap-3 px-8 py-3.5 rounded-xl text-sm font-black uppercase tracking-widest transition-all ${isCompleted ? 'bg-slate-800 text-slate-400 hover:bg-slate-700 border border-slate-600' : 'bg-emerald-600 hover:bg-emerald-500 text-slate-900 shadow-[0_0_20px_rgba(16,185,129,0.3)] active:scale-95'}`}
+                                          >
+                                            {isCompleted ? <><Icon name="rotate-left"/> Repasar de Nuevo</> : <><Icon name="square-check" className="text-lg"/> Certificar Dominio</>}
+                                          </button>
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                </div>
+              )}
+            </div>
+          );
+        }
+
+        // --- INICIO DE REACT ---
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
