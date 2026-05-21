@@ -241,7 +241,7 @@
           {
             id: 'guide_bootcamp_sql_25d',
             title: 'Bootcamp SQL: De Cero a Intermedio en 25 Días',
-            description: 'Ruta de aprendizaje intensiva paso a paso para implementadores sin experiencia previa. Aprende extracciones, cruces relacionales y manipulación segura de datos.',
+            description: 'Ruta de aprendizaje intensiva paso a paso para implementadores sin experiencia previa. Aprende extracciones, cruces relacionales y manipulación segura de datos.Los entregables deben enviarse al correo aramirezo@andreyingenieria.com.co o a través del botón en cada tarea',
             modules: [
               {
                 id: 'mod_b1',
@@ -1027,10 +1027,10 @@ Tomarás un cuello de botella real productivo. Diseñarás el Pipeline en 3 capa
 
         // --- MAIN APP COMPONENT (Gestión del Estado Base) ---
         function App() {
-          const [users, setUsers] = useLocalStorage('tr_guide_users_v18', initialUsers);
-          const [guides, setGuides] = useLocalStorage('tr_guides_v18', initialGuides);
-          const [progress, setProgress] = useLocalStorage('tr_guide_progress_v18', {});
-          const [currentUser, setCurrentUser] = useLocalStorage('tr_guide_current_user_v18', null);
+          const [users, setUsers] = useLocalStorage('tr_guide_users_v20', initialUsers);
+          const [guides, setGuides] = useLocalStorage('tr_guides_v20', initialGuides);
+          const [progress, setProgress] = useLocalStorage('tr_guide_progress_v20', {});
+          const [currentUser, setCurrentUser] = useLocalStorage('tr_guide_current_user_v20', null);
           const [isDark, setIsDark] = useLocalStorage('tr_theme_dark', true);
           
           const [localFileHandle, setLocalFileHandle] = useState(null);
@@ -1096,7 +1096,7 @@ Tomarás un cuello de botella real productivo. Diseñarás el Pipeline en 3 capa
                       });
                   });
                   if (modified) {
-                      window.localStorage.setItem('tr_guide_progress_v18', JSON.stringify(newProgress));
+                      window.localStorage.setItem('tr_guide_progress_v20', JSON.stringify(newProgress));
                   }
               };
               window.addEventListener('beforeunload', handleUnload);
@@ -1235,6 +1235,7 @@ Tomarás un cuello de botella real productivo. Diseñarás el Pipeline en 3 capa
                 <TopBar 
                     currentUser={currentUser} onLogout={logout} isDark={isDark} setIsDark={setIsDark} 
                     localFileHandle={localFileHandle} syncError={syncError}
+                    savedHandleExists={savedHandleExists} restoreWorkspace={restoreWorkspace}
                 />
                 <div className="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar">
                   {currentUser.role === 'admin' ? (
@@ -1281,128 +1282,138 @@ Tomarás un cuello de botella real productivo. Diseñarás el Pipeline en 3 capa
           return (
             <div className="w-full h-screen overflow-y-auto custom-scrollbar flex flex-col items-center justify-center p-4 py-12 relative z-10">
               
-              {/* ALERTA WORKSPACE ANTERIOR */}
-              {savedHandleExists && !localFileHandle && (
-                 <div className="w-full max-w-md bg-amber-100/90 dark:bg-amber-900/80 border border-amber-300 dark:border-amber-500/50 p-6 rounded-3xl mb-6 shadow-xl flex flex-col gap-4 animate-in slide-in-from-top-4 backdrop-blur-xl">
-                    <div className="flex items-center gap-3 text-amber-800 dark:text-amber-400">
-                        <Icon name="triangle-exclamation" className="text-3xl" />
-                        <h4 className="font-extrabold text-base">Reconectar Archivo de Avance</h4>
-                    </div>
-                    <p className="text-sm text-amber-900 dark:text-amber-200 font-medium">Por política de seguridad del navegador, debes reconectar tu archivo local con un clic para no perder progreso actual.</p>
-                    <button onClick={restoreWorkspace} className="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-3.5 rounded-xl shadow-lg active:scale-95 transition-all text-sm flex items-center justify-center gap-2">
-                        <Icon name="link" /> Restaurar Conexión Segura
-                    </button>
-                 </div>
-              )}
-
-              {/* PANEL LOGIN */}
-              <div className="w-full max-w-md glass-panel p-8 md:p-10 rounded-[2.5rem] shadow-2xl relative overflow-hidden mb-6">
-                <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-500 to-emerald-500"></div>
-                
-                <div className="text-center mb-8 flex flex-col items-center">
-                  <img src={LOGO_URL} alt="TÓTAL REPORT Logo" className="h-16 w-auto mb-4 object-contain filter drop-shadow-md" onError={(e)=>{e.target.style.display='none'}} />
-                  <p className="text-slate-600 dark:text-slate-400 text-[11px] font-black uppercase tracking-widest mt-2">Hub de Conocimiento</p>
-                </div>
-
-                {selectedUser ? (
-                  <div className="animate-in fade-in zoom-in duration-200">
-                    <button onClick={() => setSelectedUser(null)} className="flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-sm mb-6 font-bold transition-colors">
-                      <Icon name="arrow-left" className="text-xs" /> Volver
-                    </button>
-                    
-                    <div className="bg-slate-100 dark:bg-slate-900/60 p-5 rounded-2xl border border-slate-200 dark:border-slate-700/50 mb-6 flex items-center gap-5 shadow-inner">
-                      <div className="w-14 h-14 rounded-full bg-white dark:bg-gradient-to-br dark:from-slate-700 dark:to-slate-800 flex items-center justify-center text-xl font-bold text-emerald-600 dark:text-emerald-400 border border-slate-200 dark:border-slate-600 shadow-sm">
-                        {selectedUser.name.charAt(0).toUpperCase()}
-                      </div>
-                      <div>
-                        <h3 className="text-slate-900 dark:text-white font-extrabold text-lg tracking-tight">{selectedUser.name}</h3>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-widest font-bold mt-1">{selectedUser.role === 'admin' ? 'Administrador' : 'Estudiante'}</p>
-                      </div>
-                    </div>
-
-                    <form onSubmit={handleLoginSubmit} className="space-y-6">
-                      <div>
-                        <label className="block text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
-                          <Icon name="lock" /> Contraseña de Seguridad
-                        </label>
-                        <input type="password" value={passwordInput} onChange={(e) => setPasswordInput(e.target.value)} placeholder="Escribe tu clave..." className="w-full bg-white dark:bg-slate-900/60 border border-slate-300 dark:border-slate-600 rounded-xl px-5 py-4 text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50 transition-all font-bold placeholder-slate-400 shadow-inner" autoFocus />
-                        {loginError && <p className="text-red-600 dark:text-red-400 text-xs font-bold mt-3 flex items-center gap-1.5"><Icon name="circle-exclamation"/> {loginError}</p>}
-                      </div>
-                      <button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white px-5 py-4 rounded-xl font-black uppercase tracking-wider text-sm transition-all shadow-xl shadow-blue-900/20 active:scale-[0.98] hover:-translate-y-1">
-                        Ingresar al Sistema
-                      </button>
-                    </form>
-                  </div>
-                ) : (
-                  <div className="animate-in fade-in duration-300">
-                    <div className="mb-10">
-                      <h2 className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-4">Seleccionar Perfil Autorizado</h2>
-                      <div className="space-y-3 max-h-60 overflow-y-auto custom-scrollbar pr-2">
-                        {users.map(u => (
-                          <button key={u.id} onClick={() => { setSelectedUser(u); setPasswordInput(''); setLoginError(''); }} className="w-full flex items-center justify-between p-4 rounded-2xl bg-white/70 dark:bg-slate-800/60 hover:bg-white dark:hover:bg-slate-700/80 border border-slate-200 dark:border-slate-700/50 transition-all text-left group hover:scale-[1.02] hover:shadow-lg">
-                            <div className="flex items-center gap-4">
-                              <div className="w-10 h-10 rounded-full bg-slate-50 dark:bg-slate-900/60 flex items-center justify-center border border-slate-200 dark:border-slate-700/50 shadow-sm group-hover:scale-110 transition-transform">
-                                {u.role === 'admin' ? <Icon name="user-shield" className="text-blue-600 dark:text-blue-400" /> : <Icon name="chalkboard-user" className="text-emerald-600 dark:text-emerald-400" />}
-                              </div>
-                              <span className="font-bold text-slate-900 dark:text-slate-100">{u.name}</span>
-                            </div>
-                            <span className="text-[10px] px-2.5 py-1 bg-slate-100 dark:bg-slate-900 rounded-md text-slate-500 dark:text-slate-400 font-black uppercase flex items-center gap-1 border border-slate-200 dark:border-slate-800">
-                              {u.role === 'admin' ? 'Gestor' : 'Acceder'} <Icon name="chevron-right" className="ml-1 text-[10px] opacity-50"/>
-                            </span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="border-t border-slate-200 dark:border-slate-700/80 pt-8">
-                      <h2 className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-4">Matricular Nuevo Ingeniero</h2>
-                      <form onSubmit={handleCreateUser} className="space-y-4">
-                        <input type="text" value={newUserName} onChange={(e) => setNewUserName(e.target.value)} placeholder="Nombre completo..." className="w-full bg-white dark:bg-slate-900/60 border border-slate-300 dark:border-slate-600 rounded-xl px-5 py-3.5 text-sm text-slate-900 dark:text-white font-medium focus:outline-none focus:border-emerald-500 transition-colors shadow-inner" />
-                        <div className="flex gap-3">
-                          <input type="password" value={newUserPassword} onChange={(e) => setNewUserPassword(e.target.value)} placeholder="Crear Clave" className="flex-1 bg-white dark:bg-slate-900/60 border border-slate-300 dark:border-slate-600 rounded-xl px-5 py-3.5 text-sm text-slate-900 dark:text-white font-medium focus:outline-none focus:border-emerald-500 transition-colors shadow-inner" />
-                          <button type="submit" className="bg-emerald-600 hover:bg-emerald-700 dark:hover:bg-emerald-500 text-white px-6 py-3.5 rounded-xl text-sm font-bold transition-all shadow-lg shadow-emerald-900/20 active:scale-95 hover:-translate-y-1">
-                            Crear
-                          </button>
+              <div className="w-full max-w-[420px] flex flex-col gap-6">
+                  
+                  {/* ALERTA WORKSPACE ANTERIOR */}
+                  {savedHandleExists && !localFileHandle && (
+                     <div className="bg-amber-100/90 dark:bg-amber-900/60 border border-amber-300 dark:border-amber-500/50 p-5 rounded-3xl shadow-xl flex flex-col gap-4 animate-in slide-in-from-top-4 backdrop-blur-xl transition-all">
+                        <div className="flex items-center gap-3 text-amber-800 dark:text-amber-400">
+                            <Icon name="triangle-exclamation" className="text-2xl" />
+                            <h4 className="font-extrabold text-sm tracking-wide">Reconectar Archivo de Avance</h4>
                         </div>
-                      </form>
-                    </div>
-                  </div>
-                )}
-              </div>
+                        <p className="text-xs text-amber-900 dark:text-amber-200 font-medium">Por política de seguridad del navegador, debes reconectar tu archivo local con un clic para no perder progreso.</p>
+                        <button onClick={restoreWorkspace} className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold py-3 rounded-xl shadow-md active:scale-95 transition-all text-sm flex items-center justify-center gap-2">
+                            <Icon name="link" /> Restaurar Conexión Segura
+                        </button>
+                     </div>
+                  )}
 
-              {/* PANEL WORKSPACE */}
-              <div className="w-full max-w-md glass-panel p-6 rounded-3xl border border-white/40 dark:border-slate-700/50 shadow-xl transition-colors duration-500">
-                 <div className="flex items-center gap-3 mb-4">
-                     <Icon name="folder-tree" className="text-xl text-blue-600 dark:text-blue-400" />
-                     <h3 className="font-extrabold text-slate-900 dark:text-white">Ruta Local de Guardado</h3>
-                 </div>
-                 <p className="text-xs text-slate-600 dark:text-slate-400 font-medium leading-relaxed mb-5">
-                    Puedes elegir una carpeta en tu PC (ej. <code className="bg-slate-100 dark:bg-slate-900 px-1 rounded border border-slate-200 dark:border-slate-700">C:\guiasql</code>) para que la App guarde tu avance automáticamente en disco plano.
-                 </p>
-                 
-                 {localFileHandle ? (
-                     <div className="bg-emerald-50 dark:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-500/30 p-4 rounded-xl flex items-center justify-between shadow-sm">
-                         <div className="flex items-center gap-3">
-                             <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
-                                 <Icon name="check" />
+                  {/* PANEL LOGIN PRINCIPAL */}
+                  <div className="glass-panel p-8 md:p-10 rounded-[2.5rem] shadow-2xl relative overflow-hidden transition-all duration-500 hover:shadow-3xl hover:-translate-y-1">
+                    <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-500 to-emerald-500"></div>
+                    
+                    <div className="text-center mb-10 flex flex-col items-center">
+                      <img src={LOGO_URL} alt="TÓTAL REPORT Logo" className="h-20 w-auto mb-5 object-contain filter drop-shadow-xl" onError={(e)=>{e.target.style.display='none'}} />
+                      <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight mb-1">Centro de Arquitectura</h2>
+                      <p className="text-slate-500 dark:text-slate-400 text-[10px] font-black uppercase tracking-widest">Hub de Conocimiento</p>
+                    </div>
+
+                    {selectedUser ? (
+                      <div className="animate-in fade-in slide-in-from-right-4 duration-300">
+                        <button onClick={() => setSelectedUser(null)} className="flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-xs mb-6 font-bold transition-colors uppercase tracking-widest">
+                          <Icon name="arrow-left" className="text-[10px]" /> Cambiar Perfil
+                        </button>
+                        
+                        <div className="bg-slate-50 dark:bg-slate-900/60 p-5 rounded-2xl border border-slate-200 dark:border-slate-700/50 mb-8 flex items-center gap-5 shadow-inner">
+                          <div className="w-14 h-14 rounded-full bg-white dark:bg-gradient-to-br dark:from-slate-700 dark:to-slate-800 flex items-center justify-center text-xl font-bold text-emerald-600 dark:text-emerald-400 border border-slate-200 dark:border-slate-600 shadow-sm">
+                            {selectedUser.name.charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <h3 className="text-slate-900 dark:text-white font-extrabold text-lg tracking-tight">{selectedUser.name}</h3>
+                            <p className="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-widest font-bold mt-1.5">{selectedUser.role === 'admin' ? 'Administrador' : 'Estudiante'}</p>
+                          </div>
+                        </div>
+
+                        <form onSubmit={handleLoginSubmit} className="space-y-6">
+                          <div>
+                            <label className="block text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                              <Icon name="lock" /> Contraseña de Seguridad
+                            </label>
+                            <input type="password" value={passwordInput} onChange={(e) => setPasswordInput(e.target.value)} placeholder="Escribe tu clave..." className="w-full bg-white dark:bg-slate-900/60 border border-slate-300 dark:border-slate-600 rounded-2xl px-5 py-4 text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50 transition-all font-bold placeholder-slate-400 shadow-sm" autoFocus />
+                            {loginError && <p className="text-red-600 dark:text-red-400 text-xs font-bold mt-3 flex items-center gap-1.5"><Icon name="circle-exclamation"/> {loginError}</p>}
+                          </div>
+                          <button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white px-5 py-4 rounded-2xl font-black uppercase tracking-wider text-sm transition-all shadow-xl shadow-blue-900/20 active:scale-[0.98] hover:-translate-y-1">
+                            Ingresar al Sistema
+                          </button>
+                        </form>
+                      </div>
+                    ) : (
+                      <div className="animate-in fade-in slide-in-from-left-4 duration-300">
+                        <div className="mb-8">
+                          <h2 className="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-4">Seleccionar Perfil Autorizado</h2>
+                          <div className="space-y-3 max-h-56 overflow-y-auto custom-scrollbar pr-2">
+                            {users.map(u => (
+                              <button key={u.id} onClick={() => { setSelectedUser(u); setPasswordInput(''); setLoginError(''); }} className="w-full flex items-center justify-between p-4 rounded-2xl bg-white/70 dark:bg-slate-800/60 hover:bg-white dark:hover:bg-slate-700/80 border border-slate-200 dark:border-slate-700/50 transition-all text-left group hover:scale-[1.02] hover:shadow-lg">
+                                <div className="flex items-center gap-4">
+                                  <div className="w-10 h-10 rounded-full bg-slate-50 dark:bg-slate-900/60 flex items-center justify-center border border-slate-200 dark:border-slate-700/50 shadow-sm group-hover:scale-110 transition-transform">
+                                    {u.role === 'admin' ? <Icon name="user-shield" className="text-blue-600 dark:text-blue-400" /> : <Icon name="chalkboard-user" className="text-emerald-600 dark:text-emerald-400" />}
+                                  </div>
+                                  <span className="font-bold text-slate-900 dark:text-slate-100 text-sm">{u.name}</span>
+                                </div>
+                                <Icon name="chevron-right" className="text-[10px] text-slate-400 opacity-50 group-hover:opacity-100 transition-opacity mr-1"/>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="border-t border-slate-200 dark:border-slate-700/80 pt-6">
+                          <h2 className="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-4">Matricular Nuevo Ingeniero</h2>
+                          <form onSubmit={handleCreateUser} className="space-y-3">
+                            <input type="text" value={newUserName} onChange={(e) => setNewUserName(e.target.value)} placeholder="Nombre completo..." className="w-full bg-white dark:bg-slate-900/60 border border-slate-300 dark:border-slate-600 rounded-xl px-5 py-3.5 text-sm text-slate-900 dark:text-white font-medium focus:outline-none focus:border-emerald-500 transition-colors shadow-inner" />
+                            <div className="flex gap-3">
+                              <input type="password" value={newUserPassword} onChange={(e) => setNewUserPassword(e.target.value)} placeholder="Crear Clave" className="flex-1 bg-white dark:bg-slate-900/60 border border-slate-300 dark:border-slate-600 rounded-xl px-5 py-3.5 text-sm text-slate-900 dark:text-white font-medium focus:outline-none focus:border-emerald-500 transition-colors shadow-inner" />
+                              <button type="submit" className="bg-emerald-600 hover:bg-emerald-700 dark:hover:bg-emerald-500 text-white px-5 py-3.5 rounded-xl text-sm font-bold transition-all shadow-md active:scale-95 hover:-translate-y-1">
+                                Crear
+                              </button>
+                            </div>
+                          </form>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* PANEL WORKSPACE LOCAL REINCORPORADO */}
+                  <div className="glass-panel p-6 rounded-3xl border border-white/40 dark:border-slate-700/50 shadow-xl transition-colors duration-500">
+                     <div className="flex items-center gap-3 mb-4">
+                         <Icon name="folder-tree" className="text-xl text-blue-600 dark:text-blue-400" />
+                         <h3 className="font-extrabold text-slate-900 dark:text-white">Ruta Local de Guardado</h3>
+                     </div>
+                     <p className="text-xs text-slate-700 dark:text-slate-400 font-medium leading-relaxed mb-5">
+                        Puedes elegir una carpeta en tu PC (ej. <code className="bg-white dark:bg-slate-900 px-1 rounded border border-slate-200 dark:border-slate-700">C:\guiasql</code>) para que la App guarde tu avance automáticamente en disco plano.
+                     </p>
+                     
+                     {localFileHandle ? (
+                         <div className="bg-emerald-50 dark:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-500/30 p-4 rounded-xl flex items-center justify-between shadow-sm">
+                             <div className="flex items-center gap-3">
+                                 <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                                     <Icon name="check" />
+                                 </div>
+                                 <div>
+                                     <p className="text-sm font-bold text-emerald-800 dark:text-emerald-300 truncate max-w-[200px]" title={localFileHandle.name}>{localFileHandle.name}</p>
+                                     <p className="text-[10px] font-black text-emerald-600 dark:text-emerald-500 uppercase tracking-widest mt-1">Conectado y Seguro.</p>
+                                 </div>
                              </div>
-                             <div>
-                                 <p className="text-sm font-bold text-emerald-800 dark:text-emerald-300">{localFileHandle.name}</p>
-                                 <p className="text-[10px] font-black text-emerald-600 dark:text-emerald-500 uppercase tracking-widest mt-1">Conectado y Seguro.</p>
-                             </div>
+                             <button onClick={unlinkWorkspace} className="text-slate-400 hover:text-red-500 p-3 bg-white dark:bg-slate-800 rounded-lg shadow-sm hover:scale-110 active:scale-95 transition-all" title="Desvincular Archivo"><Icon name="xmark"/></button>
                          </div>
-                         <button onClick={unlinkWorkspace} className="text-slate-400 hover:text-red-500 p-3 bg-white dark:bg-slate-800 rounded-lg shadow-sm hover:scale-110 transition-all" title="Desvincular"><Icon name="xmark"/></button>
-                     </div>
-                 ) : (
-                     <div className="flex flex-col gap-3">
-                         <button onClick={createNewWorkspace} className="w-full bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-800/50 border border-blue-200 dark:border-blue-700/50 px-5 py-4 rounded-xl text-sm font-bold transition-all shadow-sm active:scale-95 hover:-translate-y-1">
-                             <Icon name="file-circle-plus" className="mr-2"/> Crear archivo nuevo de guardado
-                         </button>
-                         <button onClick={linkExistingWorkspace} className="w-full bg-slate-50 dark:bg-slate-900/50 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 px-5 py-4 rounded-xl text-sm font-bold transition-all shadow-sm active:scale-95 hover:-translate-y-1">
-                             <Icon name="folder-open" className="mr-2"/> Vincular a un archivo existente
-                         </button>
-                     </div>
-                 )}
+                     ) : (
+                         <div className="flex flex-col gap-3">
+                             <button onClick={createNewWorkspace} className="w-full bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-800/50 border border-blue-200 dark:border-blue-700/50 px-5 py-4 rounded-xl text-sm font-bold transition-all shadow-sm active:scale-95 hover:-translate-y-1 flex items-center justify-center gap-2">
+                                 <Icon name="file-circle-plus" className="text-lg"/> Crear archivo nuevo
+                             </button>
+                             <button onClick={linkExistingWorkspace} className="w-full bg-slate-50 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/80 border border-slate-200 dark:border-slate-600/50 px-5 py-4 rounded-xl text-sm font-bold transition-all shadow-sm active:scale-95 hover:-translate-y-1 flex items-center justify-center gap-2">
+                                 <Icon name="folder-open" className="text-lg"/> Vincular archivo existente
+                             </button>
+                         </div>
+                     )}
+                  </div>
+                  
+                  {/* FOOTER CRÉDITOS */}
+                  <div className="mt-4 mb-4 text-center animate-in fade-in duration-700">
+                      <p className="text-[10px] font-medium text-slate-600 dark:text-slate-400 tracking-widest uppercase leading-relaxed">
+                          Diseñado y desarrollado por <strong className="text-slate-900 dark:text-slate-200 font-black">Andrey Ramirez Ospina</strong><br/>
+                          C.T.O. TÓTAL REPORT®
+                      </p>
+                  </div>
               </div>
             </div>
           );
@@ -1410,7 +1421,7 @@ Tomarás un cuello de botella real productivo. Diseñarás el Pipeline en 3 capa
 
         function Sidebar({ currentUser, onLogout }) {
           return (
-            <div className="hidden md:flex w-72 glass-panel border-r border-white/20 dark:border-slate-800/50 flex-col h-full z-10 shadow-2xl transition-colors duration-500">
+            <div className="hidden md:flex w-[280px] glass-panel border-r border-white/20 dark:border-slate-800/50 flex-col h-full z-10 shadow-2xl transition-colors duration-500">
               <div className="p-8 border-b border-slate-200/50 dark:border-slate-800/50 flex flex-col items-center pt-10">
                 <img src={LOGO_URL} alt="TÓTAL REPORT Logo" className="h-14 w-auto object-contain filter drop-shadow-md mb-5" onError={(e)=>{e.target.style.display='none'; e.target.nextSibling.style.display='block';}} />
                 <h2 style={{display: 'none'}} className="text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-emerald-600 dark:from-blue-400 dark:to-emerald-400 tracking-tight mb-2">TÓTAL REPORT</h2>
@@ -1440,19 +1451,35 @@ Tomarás un cuello de botella real productivo. Diseñarás el Pipeline en 3 capa
           );
         }
 
-        function TopBar({ currentUser, onLogout, isDark, setIsDark, localFileHandle, syncError }) {
+        function TopBar({ currentUser, onLogout, isDark, setIsDark, localFileHandle, syncError, savedHandleExists, restoreWorkspace }) {
           return (
             <div className="h-[80px] border-b border-white/20 dark:border-slate-800/50 glass-panel flex items-center justify-between px-8 z-20 shrink-0 sticky top-0 shadow-sm transition-colors duration-500">
               <div className="flex items-center gap-5">
                 <h2 className="text-lg font-bold text-slate-800 dark:text-slate-200 md:hidden flex items-center gap-2">
                   <Icon name="bars-progress" className="text-emerald-600 dark:text-emerald-400 text-sm"/> {currentUser.role === 'admin' ? 'Gestor' : 'Guías'}
                 </h2>
-                <div className="hidden md:flex items-center gap-3 bg-white/80 dark:bg-slate-800/60 px-5 py-2 rounded-full border border-slate-200/80 dark:border-slate-700/50 shadow-sm transition-all hover:scale-105" title={localFileHandle ? `Conectado a ${localFileHandle.name}` : 'Datos temporales locales'}>
-                    <span className={`w-2.5 h-2.5 rounded-full ${localFileHandle ? 'bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]' : 'bg-slate-400'}`}></span>
-                    <span className="text-xs text-slate-700 dark:text-slate-300 font-bold flex items-center gap-1">
-                        {localFileHandle ? 'Workspace Sync ON' : 'Solo Caché Local'}
-                    </span>
-                    {syncError && <Icon name="triangle-exclamation" className="text-red-500 text-xs ml-1" title={syncError} />}
+                
+                {/* INDICADOR GLOBAL DE SINCRONIZACIÓN Y BOTÓN DE RESTAURAR */}
+                <div className="hidden md:flex items-center gap-3 bg-white/80 dark:bg-slate-800/60 px-5 py-2 rounded-full border border-slate-200/80 dark:border-slate-700/50 shadow-sm transition-all hover:scale-105" title="Estado de Guardado Local">
+                    {localFileHandle ? (
+                        <>
+                            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]"></span>
+                            <span className="text-xs text-slate-700 dark:text-slate-300 font-bold flex items-center gap-1">Workspace Sync ON</span>
+                        </>
+                    ) : savedHandleExists ? (
+                        <button onClick={restoreWorkspace} className="flex items-center gap-2 group">
+                            <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse shadow-[0_0_8px_rgba(245,158,11,0.8)]"></span>
+                            <span className="text-xs text-amber-600 dark:text-amber-400 font-bold flex items-center gap-1 group-hover:text-amber-700 dark:group-hover:text-amber-300 transition-colors">
+                                Restaurar Conexión <Icon name="link" className="ml-1" />
+                            </span>
+                        </button>
+                    ) : (
+                        <>
+                            <span className="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
+                            <span className="text-xs text-slate-600 dark:text-slate-400 font-bold flex items-center gap-1">Solo Caché Local</span>
+                        </>
+                    )}
+                    {syncError && <Icon name="triangle-exclamation" className="text-red-500 text-xs ml-1 animate-bounce" title={syncError} />}
                 </div>
               </div>
 
@@ -1589,7 +1616,7 @@ Tomarás un cuello de botella real productivo. Diseñarás el Pipeline en 3 capa
                   <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-1">Repositorio de Guías Oficiales</h3>
                   <p className="text-sm text-slate-600 dark:text-slate-400">Administra los manuales de buenas prácticas.</p>
                 </div>
-                <button onClick={() => setIsBuilding(true)} className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-3.5 rounded-xl text-sm font-bold transition-all shadow-lg shadow-emerald-900/20 active:scale-95 hover:-translate-y-1">
+                <button onClick={() => setIsBuilding(true)} className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 dark:hover:bg-emerald-500 text-white px-6 py-3.5 rounded-xl text-sm font-bold transition-all shadow-lg shadow-emerald-900/20 active:scale-95 hover:-translate-y-1">
                   <Icon name="file-circle-plus" /> Redactar Guía
                 </button>
               </div>
@@ -1616,7 +1643,7 @@ Tomarás un cuello de botella real productivo. Diseñarás el Pipeline en 3 capa
                             </button>
                             <button 
                               onClick={() => handleDeleteGuide(guide.id)}
-                              className="text-slate-500 dark:text-slate-500 hover:text-white bg-slate-100 dark:bg-slate-900/50 hover:bg-red-500 dark:hover:bg-red-500 transition-all p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-red-500 dark:hover:border-red-600 shadow-sm hover:scale-105 active:scale-95"
+                              className="text-slate-400 dark:text-slate-500 hover:text-white bg-slate-100 dark:bg-slate-900/50 hover:bg-red-500 dark:hover:bg-red-500 transition-all p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-red-500 dark:hover:border-red-600 shadow-sm hover:scale-105 active:scale-95"
                               title="Destruir Guía"
                             >
                               <Icon name="trash-can" className="text-sm" />
@@ -1686,7 +1713,7 @@ Tomarás un cuello de botella real productivo. Diseñarás el Pipeline en 3 capa
                 </div>
                 <div className="flex gap-3 w-full md:w-auto">
                   <button onClick={onCancel} className="flex-1 md:flex-none px-6 py-3.5 text-sm font-bold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white bg-white/50 dark:bg-slate-900/50 hover:bg-white dark:hover:bg-slate-800 rounded-xl transition-all border border-slate-300 dark:border-slate-700 shadow-sm active:scale-95">Cancelar</button>
-                  <button onClick={handleSave} className="flex-1 md:flex-none flex justify-center items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-8 py-3.5 rounded-xl text-sm font-bold transition-all shadow-lg shadow-emerald-900/30 active:scale-95 hover:-translate-y-1">
+                  <button onClick={handleSave} className="flex-1 md:flex-none flex justify-center items-center gap-2 bg-emerald-600 hover:bg-emerald-700 dark:hover:bg-emerald-500 text-white px-8 py-3.5 rounded-xl text-sm font-bold transition-all shadow-lg shadow-emerald-900/30 active:scale-95 hover:-translate-y-1">
                     <Icon name="floppy-disk" /> Guardar y Publicar
                   </button>
                 </div>
@@ -1762,7 +1789,7 @@ Tomarás un cuello de botella real productivo. Diseñarás el Pipeline en 3 capa
           };
 
           const handleDeleteUser = (userId) => {
-            if (window.confirm('¿ELIMINACIÓN DE USUARIO: Seguro que deseas eliminar el acceso y todo el progreso?')) {
+            if (window.confirm('¿ELIMINACIÓN DE USUARIO: Seguro que deseas eliminar el acceso y todo el progreso de este implementador?')) {
               setUsers(users.filter(u => u.id !== userId));
             }
           };
@@ -1791,7 +1818,7 @@ Tomarás un cuello de botella real productivo. Diseñarás el Pipeline en 3 capa
                 <form onSubmit={handleAddUser} className="w-full md:w-auto flex flex-col sm:flex-row gap-3 bg-white/50 dark:bg-slate-900/50 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
                   <input type="text" value={newUserName} onChange={(e) => setNewUserName(e.target.value)} placeholder="Nombre y Apellido" className="w-full sm:w-56 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 font-medium shadow-inner transition-colors" />
                   <input type="text" value={newUserPassword} onChange={(e) => setNewUserPassword(e.target.value)} placeholder="Generar Password" className="w-full sm:w-48 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 font-medium font-mono shadow-inner transition-colors" />
-                  <button type="submit" className="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-3 rounded-xl text-sm font-bold transition-all shadow-lg shadow-emerald-900/20 active:scale-95 whitespace-nowrap hover:-translate-y-1">
+                  <button type="submit" className="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 dark:hover:bg-emerald-500 text-white px-6 py-3 rounded-xl text-sm font-bold transition-all shadow-md active:scale-95 whitespace-nowrap hover:-translate-y-1">
                     <Icon name="user-plus" /> Matricular
                   </button>
                 </form>
@@ -2102,6 +2129,7 @@ Tomarás un cuello de botella real productivo. Diseñarás el Pipeline en 3 capa
                       const isModuleExpanded = expandedModules[module.id];
                       const isModuleDone = modTotal > 0 && modCompleted === modTotal;
                       
+                      // Check si el módulo tiene la tarea activa para iluminar su borde (Glow Effect)
                       const hasActivePractice = module.practices.some(p => p.id === activePracticeId);
 
                       return (
@@ -2120,7 +2148,7 @@ Tomarás un cuello de botella real productivo. Diseñarás el Pipeline en 3 capa
                                 <h3 className={`text-3xl font-extrabold transition-colors tracking-tight ${isModuleDone ? 'text-emerald-700 dark:text-emerald-100' : (hasActivePractice ? 'text-blue-900 dark:text-white' : 'text-slate-700 dark:text-white group-hover:text-blue-600 dark:group-hover:text-emerald-300')}`}>{module.title}</h3>
                                 <div className="flex items-center gap-4 mt-3">
                                   <div className="w-40 h-2.5 bg-slate-200 dark:bg-slate-900 rounded-full overflow-hidden border border-slate-300 dark:border-slate-700 shadow-inner">
-                                      <div className={`h-full transition-all duration-1000 ease-out ${isModuleDone ? 'bg-emerald-500' : 'bg-blue-500'}`} style={{ width: `${(modCompleted/modTotal)*100}%` }}></div>
+                                      <div className={`h-full transition-all duration-1000 ease-out ${isModuleDone ? 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.8)]' : 'bg-blue-500'}`} style={{ width: `${(modCompleted/modTotal)*100}%` }}></div>
                                   </div>
                                   <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">{modCompleted} / {modTotal} TEMAS</span>
                                 </div>
@@ -2144,8 +2172,8 @@ Tomarás un cuello de botella real productivo. Diseñarás el Pipeline en 3 capa
                                   <div key={practice.id} className={`rounded-3xl border transition-all duration-500 overflow-hidden shadow-sm hover:shadow-lg ${isActiveTask ? 'bg-white dark:bg-slate-800/80 border-blue-400 dark:border-emerald-500/60 ring-2 ring-emerald-500/30 dark:shadow-[0_0_30px_rgba(16,185,129,0.15)] relative scale-[1.01]' : (isCompleted ? 'bg-slate-50/50 dark:bg-slate-900/40 border-slate-200 dark:border-slate-800 opacity-80 hover:opacity-100' : 'bg-white/90 dark:bg-slate-800/60 border-slate-300 dark:border-slate-600 hover:border-slate-400 dark:hover:border-slate-500')}`}>
                                     
                                     {isActiveTask && (
-                                        <div className="absolute top-0 right-0 bg-emerald-500 text-white text-[10px] font-black px-4 py-1.5 rounded-bl-2xl uppercase tracking-widest flex items-center gap-2 shadow-lg z-10">
-                                            <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span> 📍 TAREA ACTIVA
+                                        <div className="absolute top-0 right-0 bg-emerald-500 text-white text-[10px] font-black px-4 py-1.5 rounded-bl-2xl uppercase tracking-widest flex items-center gap-2 shadow-lg z-10 animate-pulse">
+                                            <span className="w-2 h-2 rounded-full bg-white"></span> 📍 TAREA ACTIVA
                                         </div>
                                     )}
 
@@ -2180,7 +2208,7 @@ Tomarás un cuello de botella real productivo. Diseñarás el Pipeline en 3 capa
                                       <div className="accordion-inner px-6 pb-8 md:pl-[6.5rem] md:pr-8 pt-8">
                                         {/* INYECCIÓN DE MARKDOWN PARSEADO AQUÍ */}
                                         <div 
-                                            className="prose"
+                                            className="prose dark:prose-invert prose-slate max-w-none prose-emerald prose-h3:text-2xl prose-h3:font-black prose-h3:text-slate-900 dark:prose-h3:text-white prose-h3:border-b prose-h3:border-slate-200 dark:prose-h3:border-slate-700 prose-h3:pb-3 prose-h3:mb-6 prose-p:text-slate-700 dark:prose-p:text-slate-300 prose-p:leading-loose prose-li:text-slate-700 dark:prose-li:text-slate-300 prose-strong:text-emerald-600 dark:prose-strong:text-emerald-400"
                                             dangerouslySetInnerHTML={renderSafeMarkdown(practice.details)}
                                         >
                                         </div>
@@ -2190,6 +2218,7 @@ Tomarás un cuello de botella real productivo. Diseñarás el Pipeline en 3 capa
                                             practiceProgress={practiceProg} 
                                             onUpdateStatus={(newStatus) => updatePracticeStatus(selectedGuide.id, practice.id, newStatus)} 
                                         />
+                                        
                                       </div>
                                     </div>
                                   </div>
